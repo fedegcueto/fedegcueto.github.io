@@ -6,7 +6,7 @@ let nivel;
 let mic;
 let colores = ["#1477bb", "#ed920d", "#6591f2", "#c82812", "#164403", "#fd5904", "#fbdf02", "#2abc97", "#764575", "#23794c", "#ab2f65", "#0f6967"]; // crea un array con los colores
 let fondos = []; 
-let numFondos = 5; 
+let numFondos = 3; 
 let indice = 0; 
 
 function preload() {
@@ -15,7 +15,7 @@ function preload() {
     imgs.push(img);
   }
   for (let i = 0; i < numFondos; i++) {
-    let fondo = loadImage("fondo_000" + i + ".jpg");
+    let fondo = loadImage("fondo_000" + i + ".png");
     fondos.push(fondo); // agrega la imagen al array de fondos
   }
 }

@@ -1,7 +1,7 @@
 let cuadrados = [];
 let rectangulos = [];
 let imgs = [];
-let numImgs = 7;
+let numImgs = 4;
 let nivel;
 let mic;
 let colores = ["#1477bb", "#ed920d", "#6591f2", "#c82812", "#164403", "#fd5904", "#fbdf02", "#2abc97", "#764575", "#23794c", "#ab2f65", "#0f6967"]; // crea un array con los colores

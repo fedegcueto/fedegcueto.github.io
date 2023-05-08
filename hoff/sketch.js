@@ -11,7 +11,7 @@ let indice = 0;
 
 function preload() {
   for (let i = 0; i < numImgs; i++) {
-    let img = loadImage("textura_" + nf(i, 4) + ".jpg");
+    let img = loadImage("textura_" + nf(i, 4) + ".png");
     imgs.push(img);
   }
   for (let i = 0; i < numFondos; i++) {

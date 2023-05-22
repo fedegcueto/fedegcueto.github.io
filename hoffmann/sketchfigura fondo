@@ -1,0 +1,250 @@
+let formasFondo = [];
+let formasFigura = [];
+let numFormasFondo = 150;
+let numFormasFigura = 20;
+let imgs = [];
+let numImgs = 8;
+let mic;
+
+function preload() {
+  for (let i = 0; i < numImgs; i++) {
+    imgs.push(loadImage(`textura_000${i}.jpg`));
+  }
+}
+
+function crearForma(x, y, w, h, c, t) {
+  return { x, y, w, h, c, t };
+}
+
+function cambiarColor(f) {
+  f.c = color(random(255), random(255), random(255));
+}
+
+function cambiarTamano(f, s) {
+  f.w += s;
+  f.h += s;
+}
+
+function cambiarTextura(f) {
+  f.t = imgs[floor(random(numImgs))];
+}
+
+
+
+function crearFormas() {
+  formasFondo = [];
+  formasFigura = [];
+
+  const maxSizeFondo = min(width * height / 35, 200);
+  const maxSizeFigura = min(width * height / 15, 400);
+
+  for (let i = 0; i < numFormasFondo; i++) {
+    const x = random(width);
+    const y = random(height);
+    const w = random(maxSizeFondo);
+    const h = random(maxSizeFondo);
+    const c = color(random(255), random(255), random(255));
+    const t = imgs[floor(random(numImgs))];
+    const forma = crearForma(x, y, w, h, c, t);
+    formasFondo.push(forma);
+  }
+
+  for (let i = 0; i < numFormasFigura; i++) {
+    const x = random(width);
+    const y = random(height);
+    const w = random(maxSizeFigura / 2, maxSizeFigura);
+    const h = random(maxSizeFigura / 2, maxSizeFigura);
+    const c = color(random(255), random(255), random(255));
+    const t = imgs[floor(random(numImgs))];
+    const forma = crearForma(x, y, w, h, c, t);
+    formasFigura.push(forma);
+  }
+}
+
+function cambiarTamanoPorMouse() {
+  if (mouseIsPressed) {
+    const s = random(-10, 10);
+    formasFigura.forEach((f) => {
+      if (mouseX > f.x && mouseX < f.x + f.w && mouseY > f.y && mouseY < f.y + f.h) {
+        cambiarTamano(f, s);
+      }
+    });
+  }
+}
+
+function drawFormas(formas) {
+  formas.forEach((f) => {
+    fill(f.c);
+    noStroke();
+    rect(f.x, f.y, f.w, f.h);
+    image(f.t, f.x, f.y, f.w, f.h);
+  });
+}
+
+function cambiarColorYTexturaPorSonido() {
+  if (mic && mic.enabled) {
+    const nivel = mic.getLevel();
+    if (nivel > 0.1) {
+      const i = floor(random(formasFigura.length));
+      const forma = formasFigura[i];
+      cambiarColor(forma);
+      cambiarTextura(forma);
+      const opacidad = map(nivel, 0.1, 1, 50, 255);
+      forma.c.setAlpha(opacidad);
+    } else {
+      formasFigura.forEach((f) => f.c.setAlpha(50));
+    }
+  }
+}
+
+function draw() {
+  background(255);
+
+  cambiarTamanoPorMouse();
+
+  drawFormas(formasFondo);
+  drawFormas(formasFigura);
+}
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  mic = new p5.AudioIn();
+  mic.start();
+  crearFormas();
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  crearFormas();
+}
+
+function keyPressed() {
+  if (key === " ") {
+    crearFormas();
+  }
+}
+let formasFondo = [];
+let formasFigura = [];
+let numFormasFondo = 150;
+let numFormasFigura = 20;
+let imgs = [];
+let numImgs = 8;
+let mic;
+
+function preload() {
+  for (let i = 0; i < numImgs; i++) {
+    imgs.push(loadImage(`textura_000${i}.jpg`));
+  }
+}
+
+function crearForma(x, y, w, h, c, t) {
+  return { x, y, w, h, c, t };
+}
+
+function cambiarColor(f) {
+  f.c = color(random(255), random(255), random(255));
+}
+
+function cambiarTamano(f, s) {
+  f.w += s;
+  f.h += s;
+}
+
+function cambiarTextura(f) {
+  f.t = imgs[floor(random(numImgs))];
+}
+
+
+
+function crearFormas() {
+  formasFondo = [];
+  formasFigura = [];
+
+  const maxSizeFondo = min(width * height / 35, 200);
+  const maxSizeFigura = min(width * height / 15, 400);
+
+  for (let i = 0; i < numFormasFondo; i++) {
+    const x = random(width);
+    const y = random(height);
+    const w = random(maxSizeFondo);
+    const h = random(maxSizeFondo);
+    const c = color(random(255), random(255), random(255));
+    const t = imgs[floor(random(numImgs))];
+    const forma = crearForma(x, y, w, h, c, t);
+    formasFondo.push(forma);
+  }
+
+  for (let i = 0; i < numFormasFigura; i++) {
+    const x = random(width);
+    const y = random(height);
+    const w = random(maxSizeFigura / 2, maxSizeFigura);
+    const h = random(maxSizeFigura / 2, maxSizeFigura);
+    const c = color(random(255), random(255), random(255));
+    const t = imgs[floor(random(numImgs))];
+    const forma = crearForma(x, y, w, h, c, t);
+    formasFigura.push(forma);
+  }
+}
+
+function cambiarTamanoPorMouse() {
+  if (mouseIsPressed) {
+    const s = random(-10, 10);
+    formasFigura.forEach((f) => {
+      if (mouseX > f.x && mouseX < f.x + f.w && mouseY > f.y && mouseY < f.y + f.h) {
+        cambiarTamano(f, s);
+      }
+    });
+  }
+}
+
+function drawFormas(formas) {
+  formas.forEach((f) => {
+    fill(f.c);
+    noStroke();
+    rect(f.x, f.y, f.w, f.h);
+    image(f.t, f.x, f.y, f.w, f.h);
+  });
+}
+
+function cambiarColorYTexturaPorSonido() {
+  if (mic && mic.enabled) {
+    const nivel = mic.getLevel();
+    if (nivel > 0.1) {
+      const i = floor(random(formasFigura.length));
+      const forma = formasFigura[i];
+      cambiarColor(forma);
+      cambiarTextura(forma);
+      const opacidad = map(nivel, 0.1, 1, 50, 255);
+      forma.c.setAlpha(opacidad);
+    } else {
+      formasFigura.forEach((f) => f.c.setAlpha(50));
+    }
+  }
+}
+
+function draw() {
+  background(255);
+
+  cambiarTamanoPorMouse();
+
+  drawFormas(formasFondo);
+  drawFormas(formasFigura);
+}
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  mic = new p5.AudioIn();
+  mic.start();
+  crearFormas();
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  crearFormas();
+}
+
+function keyPressed() {
+  if (key === " ") {
+    crearFormas();
+  }
+}

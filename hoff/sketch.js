@@ -60,6 +60,7 @@ function crearForma(x, y, w, h, c, t) {
 function dibujarForma(f) {
   fill(f.c);
   noStroke();
+  noTint();
   //rect(f.x, f.y, f.w, f.h); // dibuja la forma
   tint(f.colorImagen); // aplica el color a la imagen
   image(f.t, f.x, f.y, f.w, f.h); // dibuja la imagen sobre la forma

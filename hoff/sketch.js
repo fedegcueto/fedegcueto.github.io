@@ -17,7 +17,7 @@ function preload() {
     imgs.push(img);
   }
   for (let i = 0; i < numFondos; i++) {
-    let fondo = loadImage("fondo_000" + i + ".png");
+    let fondo = loadImage("fondo_000" + i + ".jpg");
     fondos.push(fondo); // agrega la imagen al array de fondos
   }
 }
@@ -34,7 +34,7 @@ function seIntersectan(f1, f2) {
   let x4 = f2.x + f2.w;
   let y4 = f2.y + f2.h;
 
-  // Verifica la separación horizontal o vertical entre las formas
+  // Verifica si hay alguna separación horizontal o vertical entre las formas
   let separacionHorizontal = (x1 >= x4) || (x3 >= x2);
   let separacionVertical = (y1 >= y4) || (y3 >= y2);
 
@@ -210,6 +210,18 @@ function cambiarTamanoPorMouse() {
     }
     }
     }
+    function escribirTexto() {
+      fill(0); 
+      textSize(20); 
+      textAlign(LEFT); 
+      text("Esta obra está inspirada en las pinturas abstractas de Hans Hofmann.", width + 50, 50); 
+      text("Puedes interactuar con ella usando los siguientes botones:", width + 50, 100); 
+      text("enter: guardar la obra", width + 50, 160); 
+      text("Control: cambiar el fondo", width + 50, 190); 
+      text("Barra espaciadora: cambiar las formas de posición", width + 50, 220); 
+      text("Click + flecha: mover la forma seleccionada", width + 50, 250); 
+      text("Rueda del mouse: agrandar o achicar la forma seleccionada", width + 50, 280);
+    }
     
     function setup() {
     createCanvas(1100, 670);
@@ -224,6 +236,7 @@ function cambiarTamanoPorMouse() {
     cambiarColorYTexturaPorSonido();
     cambiarTamanoPorMouse();
     dibujarFormas();
+       escribirTexto();
     }
     
     
@@ -262,3 +275,4 @@ function keyPressed() {
     let colorImagen = random(colores); // elige un color al azar del array
     f.colorImagen = colorImagen;
   }
+  

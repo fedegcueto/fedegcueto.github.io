@@ -1,7 +1,7 @@
 let cuadrados = [];
 let rectangulos = [];
 let imgs = [];
-let numImgs = 16;
+let numImgs = 13;
 let nivel;
 let mic;
 let colores = ["#F2E9D7", "#F2C8A4", "#E6A57E", "#D97B5C", "#C95F4A", "#B84A3E", "#A63B37", "#8F2F2E", "#752525", "#5C1D1D", "#441717", "#2E1111",

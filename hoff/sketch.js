@@ -13,11 +13,11 @@ let indice = 0;
 let formaSeleccionada = null; 
 function preload() {
   for (let i = 0; i < numImgs; i++) {
-    let img = loadImage("textura_" + nf(i, 4) + ".jpg");
+    let img = loadImage("textura_" + nf(i, 4) + ".png");
     imgs.push(img);
   }
   for (let i = 0; i < numFondos; i++) {
-    let fondo = loadImage("fondo_000" + i + ".jpg");
+    let fondo = loadImage("fondo_000" + i + ".png");
     fondos.push(fondo); // agrega la imagen al array de fondos
   }
 }
@@ -34,7 +34,7 @@ function seIntersectan(f1, f2) {
   let x4 = f2.x + f2.w;
   let y4 = f2.y + f2.h;
 
-  // Verifica si hay alguna separación horizontal o vertical entre las formas
+  // Verifica la separación horizontal o vertical entre las formas
   let separacionHorizontal = (x1 >= x4) || (x3 >= x2);
   let separacionVertical = (y1 >= y4) || (y3 >= y2);
 

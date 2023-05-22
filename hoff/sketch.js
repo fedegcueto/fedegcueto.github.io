@@ -1,22 +1,48 @@
 let cuadrados = [];
 let rectangulos = [];
 let imgs = [];
-let numImgs = 4;
+let numImgs = 16;
 let nivel;
 let mic;
-let colores = ["#1477bb", "#ed920d", "#6591f2", "#c82812", "#164403", "#fd5904", "#fbdf02", "#2abc97", "#764575", "#23794c", "#ab2f65", "#0f6967"]; // crea un array con los colores
+let colores = ["#F2E9D7", "#F2C8A4", "#E6A57E", "#D97B5C", "#C95F4A", "#B84A3E", "#A63B37", "#8F2F2E", "#752525", "#5C1D1D", "#441717", "#2E1111",
+"#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FF6600", "#6600FF", "#0066FF", "#66FF00", "#00FF66", "#FF0066",
+"#1477bb", "#ed920d", "#6591f2", "#c82812", "#164403", "#fd5904", "#fbdf02", "#2abc97", "#764575", "#23794c", "#ab2f65", "#0f6967"];
 let fondos = []; 
-let numFondos = 3; 
+let numFondos = 5; 
 let indice = 0; 
-
+let formaSeleccionada = null; 
 function preload() {
   for (let i = 0; i < numImgs; i++) {
     let img = loadImage("textura_" + nf(i, 4) + ".png");
     imgs.push(img);
   }
   for (let i = 0; i < numFondos; i++) {
-    let fondo = loadImage("fondo_000" + i + ".png");
+    let fondo = loadImage("fondo_000" + i + ".jpg");
     fondos.push(fondo); // agrega la imagen al array de fondos
+  }
+}
+
+// Esta función recibe dos formas y devuelve true si se intersectan completamente o false si no
+function seIntersectan(f1, f2) {
+  // Calcula las coordenadas de las esquinas de cada forma
+  let x1 = f1.x;
+  let y1 = f1.y;
+  let x2 = f1.x + f1.w;
+  let y2 = f1.y + f1.h;
+  let x3 = f2.x;
+  let y3 = f2.y;
+  let x4 = f2.x + f2.w;
+  let y4 = f2.y + f2.h;
+
+  // Verifica si hay alguna separación horizontal o vertical entre las formas
+  let separacionHorizontal = (x1 >= x4) || (x3 >= x2);
+  let separacionVertical = (y1 >= y4) || (y3 >= y2);
+
+  // Si no hay ninguna separación, las formas se tocan
+  if (!separacionHorizontal && !separacionVertical) {
+    return true;
+  } else {
+    return false;
   }
 }
 
@@ -53,34 +79,65 @@ function cambiarTextura(f) {
   f.t = t;
 }
 
+// Esta función recibe un array de formas y una forma nueva y devuelve true si la forma nueva se intersecta con alguna de las existentes o false si no
+function seIntersectaConAlguna(formas, formaNueva) {
+  // Recorre el array de formas y verifica si alguna se intersecta con la forma nueva
+  for (let f of formas) {
+    if (seIntersectan(f, formaNueva)) {
+      return true;
+    }
+  }
+  // Si ninguna se intersecta, devuelve false
+  return false;
+}
+
+// Esta función crea las formas sin superposición
 function crearFormas() {
   cuadrados = [];
   rectangulos = [];
 
   // Establecer tamaño máximo de las formas
-  const maxSize = min(width * height / 35, 400);
+  const maxSize = min(width * height / 10, 800);
 
-  for (let i = 0; i < 20; i++) {
+  // Establecer tamaño mínimo de las formas
+  const minSize = 350;
+
+  // Crear los cuadrados
+  for (let i = 0; i < 220; i++) {
+    // Generar una forma nueva al azar
     let x = random(width);
     let y = random(height);
-    let s = random(maxSize);
+    let s = constrain(random(maxSize), minSize, maxSize);
     let c = color(floor(random(255)), floor(random(255)), floor(random(255)));
     let t = imgs[floor(random(numImgs))];
     let cuadrado = crearForma(x, y, s, s, c, t);
-    cuadrados.push(cuadrado);
+
+    // Verificar si la forma nueva se intersecta con alguna de las existentes
+    if (!seIntersectaConAlguna(cuadrados, cuadrado)) {
+      // Si no se intersecta, agregarla al array de cuadrados
+      cuadrados.push(cuadrado);
+    }
   }
 
-  for (let i = 0; i < 25; i++) {
+  // Crear los rectángulos
+  for (let i = 0; i < 225; i++) {
+    // Generar una forma nueva al azar
     let x = random(width);
     let y = random(height);
-    let w = random(maxSize);
-    let h = random(maxSize);
+    let w = random(minSize, maxSize);
+    let h = random(minSize, maxSize);
     let c = color(floor(random(255)), floor(random(255)), floor(random(255))); 
     let t = imgs[floor(random(numImgs))];
     let rectangulo = crearForma(x, y, w, h, c, t);
-    rectangulos.push(rectangulo);
+
+    // Verificar si la forma nueva se intersecta con alguna de las existentes
+    if (!seIntersectaConAlguna(cuadrados.concat(rectangulos), rectangulo)) {
+      // Si no se intersecta, agregarla al array de rectángulos
+      rectangulos.push(rectangulo);
+    }
   }
 }
+
 
 function dibujarFormas() {
   for (let r of rectangulos) {
@@ -124,11 +181,19 @@ function mouseWheel(event) {
     }
   }
 }
+function mousePressed() {
+  // Recorre las formas y verifica si el mouse está sobre alguna de ellas
+  for (let f of cuadrados.concat(rectangulos)) {
+    if (mouseX > f.x && mouseX < f.x + f.w && mouseY > f.y && mouseY < f.y + f.h) {
+      formaSeleccionada = f;
+    }
+  }
+}
 
-
+ 
 function cambiarTamanoPorMouse() {
   if (mouseIsPressed) {
-    // Recorre las formas y verificar si el mouse está sobre alguna de ellas
+    // Recorre las formas y verifica si el mouse está arriba
     for (let i = 0; i < cuadrados.length; i++) {
     if (mouseX > cuadrados[i].x && mouseX < cuadrados[i].x + cuadrados[i].w &&
     mouseY > cuadrados[i].y && mouseY < cuadrados[i].y + cuadrados[i].h) {
@@ -164,6 +229,17 @@ function cambiarTamanoPorMouse() {
     
 
 function keyPressed() {
+  if (formaSeleccionada != null) {
+    if (keyCode == UP_ARROW) {
+      formaSeleccionada.y -= 10; // arriba
+    } else if (keyCode == DOWN_ARROW) {
+      formaSeleccionada.y += 10; // abajo
+    } else if (keyCode == LEFT_ARROW) {
+      formaSeleccionada.x -= 10; // izquierda
+    } else if (keyCode == RIGHT_ARROW) {
+      formaSeleccionada.x += 10; // derecha
+    }
+  }
   if (key == " ") {
   crearFormas();
   }

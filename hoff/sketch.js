@@ -94,7 +94,7 @@ function crearFormas() {
   rectangulos = [];
 
   // Establecer tamaño máximo de las formas
-  const maxSize = min(width * height / 10, 800);
+  const maxSize = min(width * height / 10, 450);
 
   // Establecer tamaño mínimo de las formas
   const minSize = 350;

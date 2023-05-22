@@ -22,9 +22,9 @@ function preload() {
   }
 }
 
-// Esta función recibe dos formas y devuelve true si se intersectan completamente o false si no
+// recibe dos formas y devuelve true si se intersectan 
 function seIntersectan(f1, f2) {
-  // Calcula las coordenadas de las esquinas de cada forma
+  // Calcula las coordenadas
   let x1 = f1.x;
   let y1 = f1.y;
   let x2 = f1.x + f1.w;
@@ -33,12 +33,8 @@ function seIntersectan(f1, f2) {
   let y3 = f2.y;
   let x4 = f2.x + f2.w;
   let y4 = f2.y + f2.h;
-
-  // Verifica si hay alguna separación horizontal o vertical entre las formas
   let separacionHorizontal = (x1 >= x4) || (x3 >= x2);
   let separacionVertical = (y1 >= y4) || (y3 >= y2);
-
-  // Si no hay ninguna separación, las formas se tocan
   if (!separacionHorizontal && !separacionVertical) {
     return true;
   } else {

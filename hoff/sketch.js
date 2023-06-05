@@ -8,7 +8,7 @@ let colores = ["#F2E9D7", "#F2C8A4", "#E6A57E", "#D97B5C", "#C95F4A", "#B84A3E",
 "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FF6600", "#6600FF", "#0066FF", "#66FF00", "#00FF66", "#FF0066",
 "#1477bb", "#ed920d", "#6591f2", "#c82812", "#164403", "#fd5904", "#fbdf02", "#2abc97", "#764575", "#23794c", "#ab2f65", "#0f6967"];
 let fondos = []; 
-let numFondos = 5; 
+let numFondos = 3; 
 let indice = 0; 
 let formaSeleccionada = null; 
 function preload() {
@@ -17,7 +17,7 @@ function preload() {
     imgs.push(img);
   }
   for (let i = 0; i < numFondos; i++) {
-    let fondo = loadImage("fondo_000" + i + ".jpg");
+    let fondo = loadImage("fondo_000" + i + ".png");
     fondos.push(fondo); // agrega la imagen al array de fondos
   }
 }

@@ -1,7 +1,7 @@
 let cuadrados = [];
 let rectangulos = [];
 let imgs = [];
-let numImgs = 13;
+let numImgs = 16;
 let nivel;
 let mic;
 let colores = ["#F2E9D7", "#F2C8A4", "#E6A57E", "#D97B5C", "#C95F4A", "#B84A3E", "#A63B37", "#8F2F2E", "#752525", "#5C1D1D", "#441717", "#2E1111",
@@ -22,9 +22,9 @@ function preload() {
   }
 }
 
-// recibe dos formas y devuelve true si se intersectan 
+// Esta función recibe dos formas y devuelve true si se intersectan completamente o false si no
 function seIntersectan(f1, f2) {
-  // Calcula las coordenadas
+  // Calcula las coordenadas de las esquinas de cada forma
   let x1 = f1.x;
   let y1 = f1.y;
   let x2 = f1.x + f1.w;
@@ -33,8 +33,12 @@ function seIntersectan(f1, f2) {
   let y3 = f2.y;
   let x4 = f2.x + f2.w;
   let y4 = f2.y + f2.h;
+
+  // Verifica si hay alguna separación horizontal o vertical entre las formas
   let separacionHorizontal = (x1 >= x4) || (x3 >= x2);
   let separacionVertical = (y1 >= y4) || (y3 >= y2);
+
+  // Si no hay ninguna separación, las formas se tocan
   if (!separacionHorizontal && !separacionVertical) {
     return true;
   } else {
@@ -93,13 +97,13 @@ function crearFormas() {
   cuadrados = [];
   rectangulos = [];
 
-  // Establecer tamaño máximo de las formas
-  const maxSize = min(width * height / 10, 450);
+  // tamaño máximo de las formas
+  const maxSize = min(width * height / 10, 200);
 
-  // Establecer tamaño mínimo de las formas
+  // tamaño mínimo de las formas
   const minSize = 350;
 
-  // Crear los cuadrados
+  // cuadrados
   for (let i = 0; i < 220; i++) {
     // Generar una forma nueva al azar
     let x = random(width);
@@ -109,14 +113,14 @@ function crearFormas() {
     let t = imgs[floor(random(numImgs))];
     let cuadrado = crearForma(x, y, s, s, c, t);
 
-    // Verificar si la forma nueva se intersecta con alguna de las existentes
+    // verifica si la forma nueva se intersecta con alguna de las existentes
     if (!seIntersectaConAlguna(cuadrados, cuadrado)) {
-      // Si no se intersecta, agregarla al array de cuadrados
+      // si no se intersecta, agregarla al array de cuadrados
       cuadrados.push(cuadrado);
     }
   }
 
-  // Crear los rectángulos
+  // rectángulos
   for (let i = 0; i < 225; i++) {
     // Generar una forma nueva al azar
     let x = random(width);
@@ -179,7 +183,7 @@ function mouseWheel(event) {
   }
 }
 function mousePressed() {
-  // Recorre las formas y verifica si el mouse está sobre alguna de ellas
+  // recorre las formas y verifica si el mouse está sobre alguna de ellas
   for (let f of cuadrados.concat(rectangulos)) {
     if (mouseX > f.x && mouseX < f.x + f.w && mouseY > f.y && mouseY < f.y + f.h) {
       formaSeleccionada = f;
@@ -190,11 +194,11 @@ function mousePressed() {
  
 function cambiarTamanoPorMouse() {
   if (mouseIsPressed) {
-    // Recorre las formas y verifica si el mouse está arriba
+    // recorre las formas y verifica si el mouse está arriba
     for (let i = 0; i < cuadrados.length; i++) {
     if (mouseX > cuadrados[i].x && mouseX < cuadrados[i].x + cuadrados[i].w &&
     mouseY > cuadrados[i].y && mouseY < cuadrados[i].y + cuadrados[i].h) {
-    // Cambiar el tamaño del cuadrado seleccionado
+    // cambia el tamaño del cuadrado seleccionado
     cambiarTamano(cuadrados[i]);
     }
     }
@@ -241,21 +245,21 @@ function cambiarTamanoPorMouse() {
 function keyPressed() {
   if (formaSeleccionada != null) {
     if (keyCode == UP_ARROW) {
-      formaSeleccionada.y -= 10; // arriba
+      formaSeleccionada.y -= 10; 
     } else if (keyCode == DOWN_ARROW) {
-      formaSeleccionada.y += 10; // abajo
+      formaSeleccionada.y += 10; 
     } else if (keyCode == LEFT_ARROW) {
-      formaSeleccionada.x -= 10; // izquierda
+      formaSeleccionada.x -= 10; 
     } else if (keyCode == RIGHT_ARROW) {
-      formaSeleccionada.x += 10; // derecha
+      formaSeleccionada.x += 10; 
     }
   }
   if (key == " ") {
   crearFormas();
   }
   if (key == "f") { 
-    let fs = fullscreen(); // obtiene el estado actual de pantalla completa
-    fullscreen(!fs); // cambia al opuesto
+    let fs = fullscreen(); // obtiene el estado actual
+    fullscreen(!fs); 
   }
   if (keyCode == ENTER) { 
     saveCanvas("captura.png"); 

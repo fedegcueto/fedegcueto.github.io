@@ -1,7 +1,7 @@
 let cuadrados = [];
 let rectangulos = [];
 let imgs = [];
-let numImgs = 13;
+let numImgs = 10;
 let nivel;
 let mic;
 let colores = ["#F2E9D7", "#F2C8A4", "#E6A57E", "#D97B5C", "#C95F4A", "#B84A3E", "#A63B37", "#8F2F2E", "#752525", "#5C1D1D", "#441717", "#2E1111",
@@ -13,7 +13,7 @@ let indice = 0;
 let formaSeleccionada = null; 
 function preload() {
   for (let i = 0; i < numImgs; i++) {
-    let img = loadImage("textura/textura_" + nf(i, 4) + ".png");
+    let img = loadImage("textura_" + nf(i, 4) + ".png");
     imgs.push(img);
   }
   for (let i = 0; i < numFondos; i++) {

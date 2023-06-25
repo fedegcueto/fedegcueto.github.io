@@ -224,12 +224,13 @@ function cambiarTamanoPorMouse() {
       text("Rueda del mouse: agrandar o achicar la forma seleccionada", width + 50, 280);
     }
     
-    function setup() {
+   function setup() {
     createCanvas(1100, 670);
     mic = new p5.AudioIn();
     mic.start();
+    userStartAudio();
     crearFormas();
-    }
+    }
     
     function draw() {
        noTint(); 

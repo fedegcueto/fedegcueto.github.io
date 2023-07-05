@@ -10,8 +10,6 @@ let intervaloEstado;
 let threshold = 0.1; 
 let grav = false; 
 let fft;
-
-// Definir la paleta de colores
 let paleta = ["#F2E9D7", "#F2C8A4", "#E6A57E", "#D97B5C", "#C95F4A", "#B84A3E", "#A63B37", "#8F2F2E", "#752525", "#5C1D1D", "#441717", "#2E1111", "#ed920d", "#6591f2", "#c82812", "#164403", "#fd5904", "#fbdf02"];
 
 function preload() {
@@ -53,7 +51,7 @@ function draw() {
       generarFiguras();
       cambiarTexturaColorPorSonido(); 
       break;
-    case 5: // estado de caer y subir
+    case 5: 
       generarFondo();
       generarFiguras();
       aplicarGravedad(); 
@@ -65,9 +63,10 @@ function mostrarInstrucciones() {
   background(0);
   fill(255);
   textSize(20);
-  text("obras inspiradas en Hans Hofmann.", 100, 100); 
-  text("Los estados duran cada uno unos ", width /2, height /2);
-    text("Diviértete!", width /2, height /2 +30);
+  text("Este es un programa te permite crear y modificar obras de Hans Hofmanne.", 100, 100);
+  text("Hay cuatro botones diferentes que puedes explorar con el mouse.", 100, 130);
+  text("Al pasar al siguiente estado utiliza el microfono para modificar la obra.", 100, 160);
+    text("Diviértete!", 100, 190);
 }
 
 function cambiarEstado() {
@@ -111,9 +110,7 @@ if (estado === 2 || estado === 3 || estado === 4 || estado === 5) {
 grav = true; 
 }
 }
-// Cambiar esta función para que use la paleta de colores
 function cambiarColor(forma) {
-// Elegir un color al azar de la paleta
 let index = floor(random(paleta.length));
 forma.color = color(paleta[index]);
 }

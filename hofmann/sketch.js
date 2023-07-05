@@ -2,7 +2,7 @@ let figuras = [];
 let imgs = [];
 let fondos = [];
 let indiceFondo = 0;
-let maxFiguras = 30;
+let maxFiguras = 10; // cambiar el valor a 10
 let mic;
 let vol;
 let estado = 1; 
@@ -11,13 +11,12 @@ let threshold = 0.1;
 let grav = false; 
 let fft;
 let paleta = ["#F2E9D7", "#F2C8A4", "#E6A57E", "#D97B5C", "#C95F4A", "#B84A3E", "#A63B37", "#8F2F2E", "#752525", "#5C1D1D", "#441717", "#2E1111", "#ed920d", "#6591f2", "#c82812", "#164403", "#fd5904", "#fbdf02"];
-
 function preload() {
   for (let i = 1; i <= 15; i++) {
-    imgs.push(loadImage(`textura_000${i}.png`));
+    imgs.push(loadImage("textura_" + nf(i, 4) + ".png"));
   }
   for (let i = 1; i <= 9; i++) {
-    fondos.push(loadImage(`fondo_000${i}.jpg`));
+    fondos.push(loadImage("fondo_" + nf(i, 4) + ".jpg"));
   }
 }
 function setup() {
@@ -29,7 +28,6 @@ function setup() {
   fft.setInput(mic); 
   intervaloEstado = setInterval(cambiarEstado, 15000); 
 }
-
 function draw() {
   switch (estado) { 
     case 1: 
@@ -54,11 +52,10 @@ function draw() {
     case 5: 
       generarFondo();
       generarFiguras();
-      aplicarGravedad(); 
+      saveCanvas("captura.png");
       break;
   }
 }
-
 function mostrarInstrucciones() {
   background(0);
   fill(255);
@@ -77,7 +74,6 @@ estado = 1;
 clearInterval(intervaloEstado); 
 intervaloEstado = setInterval(cambiarEstado, 15000);
 }
-
 function cambiarFondo() {
 if (estado === 2 || estado === 3 || estado === 4 || estado === 5) { 
 indiceFondo++;
@@ -92,15 +88,43 @@ if (vol > threshold) {
 cambiarFondo();
 }
 }
+let contador = 0;
+
 function generarFigura() {
 if (estado === 2 || estado === 3 || estado === 4 || estado === 5) { 
 if (figuras.length < maxFiguras) {
 let forma = crearFormaAleatoria();
-figuras.push(forma);
+let sePuedeAgregar = true;
+for (let i = 0; i < figuras.length; i++) { 
+let otraForma = figuras[i];
+if (seIntersectan(forma, otraForma)) { 
+sePuedeAgregar = false; 
+break; 
+}
+if (sePuedeAgregar) { 
+figuras.push(forma); 
+contador++;
+}
 } else {
-figuras.shift();
-let forma = crearFormaAleatoria();
+figuras.shift(); 
+let forma = crearFormaAleatoria(); 
+let sePuedeAgregar = true; 
+for (let i = 0; i < figuras.length; i++) { 
+let otraForma = figuras[i];
+if (seIntersectan(forma, otraForma)) {
+sePuedeAgregar = false;
+break;
+}
+}
+if (contador < 3) { 
+if (sePuedeAgregar) { 
 figuras.push(forma);
+contador++; 
+}
+} else {
+figuras.push(forma);
+contador = 0; 
+}
 }
 }
 }
@@ -153,7 +177,6 @@ cambiarTextura(forma);
 function generarFondo() {
 image(fondos[indiceFondo], 0, 0, width, height);
 }
-
 function generarFiguras() {
 for (let i = 0; i < figuras.length; i++) {
 let forma = figuras[i];
@@ -177,3 +200,10 @@ if (vol > threshold) {
 generarFigura(); 
 }
 }
+function seIntersectan(r1, r2) {
+return !(r2.x > r1.x + r1.tam || 
+r2.x + r2.tam < r1.x || 
+r2.y > r1.y + r1.tam ||
+r2.y + r2.tam < r1.y);
+}
+

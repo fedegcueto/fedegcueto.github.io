@@ -2,12 +2,12 @@ let figuras = [];
 let imgs = [];
 let fondos = [];
 let indiceFondo = 0;
-let maxFiguras = 20; // cambiar el valor a 10
+let maxFiguras = 10;
 let mic;
 let vol;
 let estado = 1; 
 let intervaloEstado; 
-let threshold = 0.1; 
+let threshold = 0.2; 
 let grav = false; 
 let fft;
 let paleta = ["#F2E9D7", "#F2C8A4", "#E6A57E", "#D97B5C", "#C95F4A", "#B84A3E", "#A63B37", "#8F2F2E", "#752525", "#5C1D1D", "#441717", "#2E1111", "#ed920d", "#6591f2", "#c82812", "#164403", "#fd5904", "#fbdf02"];
@@ -53,6 +53,7 @@ function draw() {
       generarFondo();
       generarFiguras();
       saveCanvas("captura.png");
+      estado = 1;
       break;
   }
 }
@@ -60,9 +61,9 @@ function mostrarInstrucciones() {
   background(0);
   fill(255);
   textSize(20);
-  text("Este es un programa te permite crear y modificar obras de Hans Hofmanne.", 100, 100);
-  text("Hay cuatro botones diferentes que puedes explorar con el mouse.", 100, 130);
-  text("Al pasar al siguiente estado utiliza el microfono para modificar la obra.", 100, 160);
+  text("Este es un programa te permite crear obras inspiradas en Hans Hofmann.", 100, 100);
+  text("Hay cuatro estados diferentes que puedes modificar con el micrófono.", 100, 130);
+  text("Cada estado cambia automaticamente cada 15 segundos", 100, 160);
     text("Diviértete!", 100, 190);
 }
 
@@ -88,43 +89,43 @@ if (vol > threshold) {
 cambiarFondo();
 }
 }
-let contador = 0; // variable para contar las figuras sin intersección
+let contador = 0; 
 
 function generarFigura() {
 if (estado === 2 || estado === 3 || estado === 4 || estado === 5) { 
 if (figuras.length < maxFiguras) {
 let forma = crearFormaAleatoria();
-let sePuedeAgregar = true; // variable para controlar si se puede agregar la forma
-for (let i = 0; i < figuras.length; i++) { // bucle que recorre el arreglo de figuras
+let sePuedeAgregar = true;
+for (let i = 0; i < figuras.length; i++) {
 let otraForma = figuras[i];
-if (seIntersectan(forma, otraForma)) { // si hay intersección con alguna otra forma
-sePuedeAgregar = false; // se cambia la variable a falso
-break; // se sale del bucle
+if (seIntersectan(forma, otraForma)) { 
+sePuedeAgregar = false; 
+break; 
 }
 }
-if (sePuedeAgregar) { // si la variable es verdadera
-figuras.push(forma); // se agrega la forma al arreglo
-contador++; // se incrementa el contador
+if (sePuedeAgregar) { 
+figuras.push(forma);
+contador++; 
 }
 } else {
-figuras.shift(); // se elimina la primera forma del arreglo
-let forma = crearFormaAleatoria(); // se crea una nueva forma aleatoria
-let sePuedeAgregar = true; // se inicializa la variable a verdadero
-for (let i = 0; i < figuras.length; i++) { // se repite el mismo proceso que antes
+figuras.shift(); 
+let forma = crearFormaAleatoria();
+let sePuedeAgregar = true; 
+for (let i = 0; i < figuras.length; i++) { 
 let otraForma = figuras[i];
 if (seIntersectan(forma, otraForma)) {
 sePuedeAgregar = false;
 break;
 }
 }
-if (contador < 3) { // si el contador es menor que 3
-if (sePuedeAgregar) { // solo se agrega la forma si no se intersecta con ninguna otra
+if (contador < 3) { 
+if (sePuedeAgregar) {
 figuras.push(forma);
-contador++; // se incrementa el contador
+contador++; 
 }
-} else { // si el contador es igual o mayor que 3
-figuras.push(forma); // se agrega la forma sin importar si se intersecta o no
-contador = 0; // se reinicia el contador
+} else {
+figuras.push(forma); 
+contador = 0; 
 }
 }
 }
@@ -201,8 +202,6 @@ if (vol > threshold) {
 generarFigura(); 
 }
 }
-
-// función para verificar si dos rectángulos se intersectan
 function seIntersectan(r1, r2) {
 return !(r2.x > r1.x + r1.tam || 
 r2.x + r2.tam < r1.x || 

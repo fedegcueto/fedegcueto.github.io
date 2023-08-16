@@ -10,7 +10,7 @@ let unplayedVideos = [];
 function preload() {
   for (let i = 0; i < 10; i++) objModels.push(loadModel('ob' + i + '.obj'));
   for (let i = 0; i < 25; i++) {
-    const vid = createVideo(['https://unguentopilates.com/wp-content/uploads/2023/08/video' + i + '.mp4']);
+    const vid = createVideo(['video' + i + '.mp4']);
     vid.hide();
     videos.push(vid);
   }

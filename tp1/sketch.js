@@ -97,7 +97,7 @@ class InteractiveObject {
     fill(255);
     textAlign(CENTER);
     textSize(20);
-    text('Press "E" to interact', this.mesh.position.x, this.mesh.position.y + 2, this.mesh.position.z);
+    text('Aprieta "E" para interactuar', this.mesh.position.x, this.mesh.position.y + 2, this.mesh.position.z);
   }
   hidePrompt() {
     // Ocultar el cartel.

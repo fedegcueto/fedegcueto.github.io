@@ -1,149 +1,174 @@
-let scene, camera, renderer;
-const objModels = [];
+// Definición de variables globales para la escena, cámara, renderizador, modelos 3D, videos, objetos interactivos, datos narrativos, jugador y estado de pantalla completa.
+let escena, camara, renderizador;
+const modelosObj = [];
 const videos = [];
-const interactiveObjects = [];
-const narrativeData = [];
-let player;
-let videoFullscreen = false;
+const objetosInteractivos = [];
+const datosNarrativos = [];
+let jugador;
+let videoEnPantallaCompleta = false;
 
-function preload() {
-  for (let i = 0; i < 10; i++) objModels.push(loadModel('ob' + i + '.obj'));
+// Función para precargar modelos 3D, videos y datos narrativos.
+function precargar() {
+  // Cargar modelos 3D y videos en arrays.
+  for (let i = 0; i < 10; i++) modelosObj.push(loadModel('ob' + i + '.obj'));
   for (let i = 0; i < 25; i++) {
     const vid = createVideo(['video' + i + '.mp4']);
     vid.hide();
     videos.push(vid);
   }
-  for (let i = 0; i < 100; i++) narrativeData.push({ puzzleSolved: false, choiceMade: null });
+  // Inicializar datos narrativos para cada objeto interactivo.
+  for (let i = 0; i < 100; i++) datosNarrativos.push({ rompecabezasResuelto: false, decisionTomada: null });
 }
 
-function setup() {
-  let canvas = createCanvas(windowWidth, windowHeight);
-  canvas.position(0, 0);
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-  camera.position.z = 10;
-  renderer = new THREE.WebGLRenderer();
-  renderer.setSize(width, height);
-  document.body.appendChild(renderer.domElement);
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-  dirLight.position.set(0, 10, 10);
-  scene.add(dirLight);
-  const floorGeometry = new THREE.PlaneGeometry(100, 100);
-  const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x999999, side: THREE.DoubleSide });
-  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-  floor.rotation.x = -Math.PI / 2;
-  scene.add(floor);
-  player = new Player();
-  player.mesh.position.y = 1;
-  scene.add(player.mesh);
+// Función de configuración al inicio del programa.
+function configurar() {
+  // Crear lienzo 3D y configurar la escena, cámara y renderizador.
+  let lienzo = createCanvas(windowWidth, windowHeight);
+  lienzo.position(0, 0);
+  escena = new THREE.Scene();
+  camara = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+  camara.position.z = 10;
+  renderizador = new THREE.WebGLRenderer();
+  renderizador.setSize(width, height);
+  document.body.appendChild(renderizador.domElement);
+  
+  // Agregar iluminación a la escena y un suelo.
+  const luzDireccional = new THREE.DirectionalLight(0xffffff, 1);
+  luzDireccional.position.set(0, 10, 10);
+  escena.add(luzDireccional);
+  const geometriaSuelo = new THREE.PlaneGeometry(100, 100);
+  const materialSuelo = new THREE.MeshPhongMaterial({ color: 0x999999, side: THREE.DoubleSide });
+  const suelo = new THREE.Mesh(geometriaSuelo, materialSuelo);
+  suelo.rotation.x = -Math.PI / 2;
+  escena.add(suelo);
+  
+  // Inicializar el jugador y objetos interactivos en la escena.
+  jugador = new Jugador();
+  jugador.malla.position.y = 1;
+  escena.add(jugador.malla);
   for (let i = 0; i < 100; i++) {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-    mesh.position.set(random(-50, 50), 1, random(-50, 50));
-    const object = new InteractiveObject(mesh, objModels, videos, narrativeData[i]);
-    interactiveObjects.push(object);
-    scene.add(mesh);
+    const malla = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+    malla.position.set(random(-50, 50), 1, random(-50, 50));
+    const objeto = new ObjetoInteractivo(malla, modelosObj, videos, datosNarrativos[i]);
+    objetosInteractivos.push(objeto);
+    escena.add(malla);
   }
 }
 
-function draw() {
-  renderer.render(scene, camera);
-  for (let obj of interactiveObjects) {
-    const isNear = player.isNear(obj.mesh);
+// Función de dibujo que se ejecuta en cada frame.
+function dibujar() {
+  // Renderizar la escena.
+  renderizador.render(escena, camara);
+  
+  // Iterar sobre objetos interactivos para mostrar indicaciones, detectar interacciones y actualizar el jugador.
+  for (let obj of objetosInteractivos) {
+    const estaCerca = jugador.estaCerca(obj.malla);
 
-    if (isNear) {
-      obj.showPrompt();
-      if (keyIsDown(69)) obj.interact(player);
+    if (estaCerca) {
+      obj.mostrarIndicacion();
+      if (keyIsDown(69)) obj.interactuar(jugador);
     } else {
-      obj.hidePrompt();
-      obj.stopVideo(); // Detener el video si el jugador se aleja del cubo.
+      obj.ocultarIndicacion();
+      obj.detenerVideo(); // Detener el video si el jugador se aleja del cubo.
     }
   }
-  player.update();
-  camera.position.set(player.mesh.position.x, player.mesh.position.y + 10, player.mesh.position.z + 10);
-  camera.lookAt(player.mesh.position);
+  // Actualizar la posición de la cámara según el jugador.
+  jugador.actualizar();
+  camara.position.set(jugador.malla.position.x, jugador.malla.position.y + 10, jugador.malla.position.z + 10);
+  camara.lookAt(jugador.malla.position);
 }
 
-class Player {
+// Clase que representa al jugador en la escena.
+class Jugador {
   constructor() {
-    this.mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-    this.vel = new THREE.Vector3();
-    this.speed = 0.1;
+    // Crear una esfera amarilla para representar al jugador.
+    this.malla = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+    this.velocidad = new THREE.Vector3();
+    this.velocidadInicial = 0.1;
   }
-  update() {
-    if (keyIsDown(87)) this.vel.z -= this.speed;
-    if (keyIsDown(83)) this.vel.z += this.speed;
-    if (keyIsDown(65)) this.vel.x -= this.speed;
-    if (keyIsDown(68)) this.vel.x += this.speed;
-    this.mesh.position.add(this.vel);
-    this.vel.set(0, 0, 0);
+  // Actualizar la posición del jugador según las teclas presionadas.
+  actualizar() {
+    if (keyIsDown(87)) this.velocidad.z -= this.velocidadInicial;
+    if (keyIsDown(83)) this.velocidad.z += this.velocidadInicial;
+    if (keyIsDown(65)) this.velocidad.x -= this.velocidadInicial;
+    if (keyIsDown(68)) this.velocidad.x += this.velocidadInicial;
+    this.malla.position.add(this.velocidad);
+    this.velocidad.set(0, 0, 0);
   }
-  isNear(object) {
-    return this.mesh.position.distanceTo(object.position) < 5;
+  // Verificar si el jugador está cerca de un objeto en la escena.
+  estaCerca(objeto) {
+    return this.malla.position.distanceTo(objeto.position) < 5;
   }
 }
 
-class InteractiveObject {
-  constructor(mesh, models, videos, narrative) {
-    this.mesh = mesh;
-    this.models = models;
+// Clase que representa un objeto interactivo en la escena.
+class ObjetoInteractivo {
+  constructor(malla, modelos, videos, narrativa) {
+    this.malla = malla;
+    this.modelos = modelos;
     this.videos = videos;
-    this.narrative = narrative;
-    this.interacted = false;
-    this.videoIndex = Math.floor(random(this.videos.length));
-    this.videoPlaying = false;
-    this.currentVideo = null;
+    this.narrativa = narrativa;
+    this.interactuado = false;
+    this.indiceVideo = Math.floor(random(this.videos.length));
+    this.videoReproduciendo = false;
+    this.videoActual = null;
   }
-  showPrompt() {
+  // Mostrar indicación para interactuar con el objeto.
+  mostrarIndicacion() {
     fill(255);
     textAlign(CENTER);
     textSize(20);
-    text('Aprieta "E" para interactuar', this.mesh.position.x, this.mesh.position.y + 2, this.mesh.position.z);
+    text('Presiona "E" para interactuar', this.malla.position.x, this.malla.position.y + 2, this.malla.position.z);
   }
-  hidePrompt() {
+  // Ocultar la indicación del objeto.
+  ocultarIndicacion() {
     // Ocultar el cartel.
   }
-  interact(player) {
-    if (!this.interacted) {
-      this.interacted = true;
+  // Interactuar con el objeto, reproduciendo o deteniendo un video.
+  interactuar(jugador) {
+    if (!this.interactuado) {
+      this.interactuado = true;
       if (this.videos.length > 0) {
-        const chosenVideo = this.videos[this.videoIndex];
-        chosenVideo.size(width, height);
-        chosenVideo.position(0, 0);
+        const videoElegido = this.videos[this.indiceVideo];
+        videoElegido.size(width, height);
+        videoElegido.position(0, 0);
 
-        if (!this.videoPlaying) {
+        if (!this.videoReproduciendo) {
           // Iniciar el video si no se está reproduciendo.
-          chosenVideo.show();
-          this.hideOtherVideos(this.videoIndex);
-          if (!videoFullscreen) fullscreenCanvas(chosenVideo);
-          else restoreCanvas();
+          videoElegido.show();
+          this.ocultarOtrosVideos(this.indiceVideo);
+          if (!videoEnPantallaCompleta) pantallaCompleta(videoElegido);
+          else restaurarLienzo();
 
-          videoFullscreen = !videoFullscreen;
-          chosenVideo.play();
-          this.videoPlaying = true;
-          this.currentVideo = chosenVideo;
+          videoEnPantallaCompleta = !videoEnPantallaCompleta;
+          videoElegido.play();
+          this.videoReproduciendo = true;
+          this.videoActual = videoElegido;
         } else {
           // Detener y ocultar el video si ya se está reproduciendo.
-          chosenVideo.pause();
-          chosenVideo.hide();
-          this.videoPlaying = false;
-          this.currentVideo = null;
+          videoElegido.pause();
+          videoElegido.hide();
+          this.videoReproduciendo = false;
+          this.videoActual = null;
         }
       }
     }
   }
-  stopVideo() {
-    if (this.videoPlaying) {
-      if (this.currentVideo) {
-        this.currentVideo.pause();
-        this.currentVideo.hide();
+  // Detener la reproducción del video.
+  detenerVideo() {
+    if (this.videoReproduciendo) {
+      if (this.videoActual) {
+        this.videoActual.pause();
+        this.videoActual.hide();
       }
-      this.videoPlaying = false;
-      this.currentVideo = null;
+      this.videoReproduciendo = false;
+      this.videoActual = null;
     }
   }
-  hideOtherVideos(selectedIndex) {
+  // Ocultar videos que no están siendo reproducidos.
+  ocultarOtrosVideos(indiceSeleccionado) {
     for (let i = 0; i < this.videos.length; i++) {
-      if (i !== selectedIndex) {
+      if (i !== indiceSeleccionado) {
         const video = this.videos[i];
         video.pause();
         video.hide();
@@ -152,22 +177,24 @@ class InteractiveObject {
   }
 }
 
-function fullscreenCanvas(element) {
-  const canvasElement = document.getElementById('defaultCanvas0');
-  const videoElement = element.elt;
-  canvasElement.style.display = 'none';
-  videoElement.style.display = 'block';
-  videoElement.style.position = 'fixed';
-  videoElement.style.top = '0';
-  videoElement.style.left = '0';
-  videoElement.style.width = '100%';
-  videoElement.style.height = '100%';
+// Función para poner el lienzo en pantalla completa con el elemento pasado como parámetro.
+function pantallaCompleta(elemento) {
+  const elementoCanvas = document.getElementById('defaultCanvas0');
+  const elementoVideo = elemento.elt;
+  elementoCanvas.style.display = 'none';
+  elementoVideo.style.display = 'block';
+  elementoVideo.style.position = 'fixed';
+  elementoVideo.style.top = '0';
+  elementoVideo.style.left = '0';
+  elementoVideo.style.width = '100%';
+  elementoVideo.style.height = '100%';
 }
 
-function restoreCanvas() {
-  const canvasElement = document.getElementById('defaultCanvas0');
-  const videoElements = document.getElementsByTagName('video');
-  canvasElement.style.display = 'block';
+// Restaurar el lienzo a su tamaño original.
+function restaurarLienzo() {
+  const elementoCanvas = document.getElementById('defaultCanvas0');
+  const elementosVideo = document.getElementsByTagName('video');
+  elementoCanvas.style.display = 'block';
 
-  for (let i = 0; i < videoElements.length; i++) videoElements[i].style.display = 'none';
+  for (let i = 0; i < elementosVideo.length; i++) elementosVideo[i].style.display = 'none';
 }

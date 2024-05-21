@@ -40,12 +40,12 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(500, 750);
+    createCanvas(720, 1080);
     engine = Engine.create();
     world = engine.world;
 
     // Create container
-    container = new Container(400, 550, 400, 100); // Narrower container
+    container = new Container(400, 550, 350, 100); // Narrower container
 
     // Create boundaries
     boundaries.push(new Boundary(width / 2, height, width, 50));  // Bottom boundary
@@ -107,10 +107,10 @@ function draw() {
     }
 
     // Show hint for dropping fruit
-    textSize(17);
+    textSize(20);
     fill(0);
     textAlign(CENTER, CENTER);
-    text('Mantener el dedo en la pantalla, levantar y apoyar para soltar', width / 2, height - 13);
+    text('Mantener el dedo en la pantalla, levantar y apoyar para soltar la fruta', width / 2, height - 13);
 }
 
 function mousePressed() {

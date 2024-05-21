@@ -98,6 +98,12 @@ function draw() {
     text('Puntos: ' + score, 450, 845);
     text('Nº1: ' + highScore, 450, 885);
 
+    // Draw the Game Over limit line
+    push();
+    stroke(205, 0, 0);
+    strokeWeight(2);
+    line(0, 100, width, 100); // Draw line at y = 100
+    pop();
     // Check for game over
     if (isGameOver()) {
         textSize(64);
@@ -299,8 +305,12 @@ function getNextFruitType(type) {
 
 function isGameOver() {
     for (let i = 0; i < fruits.length; i++) {
-        if (fruits[i].body && fruits[i].body.position.y > height) {
-            return true;
+        let fruit = fruits[i];
+        if (fruit.body && !fruit.isStatic) {
+            // Check if the fruit has crossed the limit line at y = 100 going upwards
+            if (fruit.body.position.y < 100 && fruit.body.velocity.y < 0) {
+                return true;
+            }
         }
     }
     return false;

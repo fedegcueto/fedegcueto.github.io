@@ -40,7 +40,7 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(800, 600);
+    createCanvas(540, 800);
     engine = Engine.create();
     world = engine.world;
 
@@ -77,8 +77,12 @@ function draw() {
     }
 
     // Update and display fruits
-    for (let i = 0; i < fruits.length; i++) {
-        fruits[i].show();
+    for (let i = fruits.length - 1; i >= 0; i--) {
+        if (fruits[i].body) {
+            fruits[i].show();
+        } else {
+            fruits.splice(i, 1); // Remove fruit with null body from the array
+        }
     }
 
     // Update and display the current fruit at the top
@@ -90,8 +94,8 @@ function draw() {
     // Display score
     textSize(32);
     fill(0);
-    text('Score: ' + score, 10, 40);
-    text('High Score: ' + highScore, 10, 80);
+    text('Puntos: ' + score, 350, 535);
+    text('Nº1: ' + highScore, 350, 575);
 
     // Check for game over
     if (isGameOver()) {
@@ -103,25 +107,24 @@ function draw() {
     }
 
     // Show hint for dropping fruit
-    textSize(20);
+    textSize(19,5);
     fill(0);
     textAlign(CENTER, CENTER);
-    text('Click to drop the fruit', width / 2, height - 20);
+    text('Mantener el dedo en la pantalla, levantar y apoyar para soltar', width / 2, height - 13);
 }
 
 function mousePressed() {
     if (isGameOver()) {
         resetGame();
-        loop();  // Restart the draw loop
+        loop();
         playSound(gameOverSound);
     } else {
         if (currentFruit) {
             currentFruit.release();
             fruits.push(currentFruit);
             playSound(dropSound);
+            currentFruit = new Fruit(mouseX, 50, getRandomFruitType(), true);
         }
-        // Generate a new random fruit at the top
-        currentFruit = new Fruit(mouseX, 50, getRandomFruitType(), true);
     }
 }
 
@@ -206,14 +209,16 @@ class Fruit {
     }
 
     show() {
-        let pos = this.body.position;
-        let angle = this.body.angle;
-        push();
-        translate(pos.x, pos.y);
-        rotate(angle);
-        imageMode(CENTER);
-        image(this.image, 0, 0, this.size, this.size);
-        pop();
+        if (this.body) {  // Check if body is not null
+            let pos = this.body.position;
+            let angle = this.body.angle;
+            push();
+            translate(pos.x, pos.y);
+            rotate(angle);
+            imageMode(CENTER);
+            image(this.image, 0, 0, this.size, this.size);
+            pop();
+        }
     }
 }
 
@@ -223,35 +228,52 @@ function handleCollision(event) {
         let bodyA = pairs[i].bodyA;
         let bodyB = pairs[i].bodyB;
 
-        // Check if both bodies are fruits
         let fruitA = getFruitByBody(bodyA);
         let fruitB = getFruitByBody(bodyB);
 
         if (fruitA && fruitB && fruitA.type === fruitB.type) {
-            // Merge fruits
             let nextType = getNextFruitType(fruitA.type);
             if (nextType) {
-                let newFruit = new Fruit((fruitA.body.position.x + fruitB.body.position.x) / 2,
-                                         (fruitA.body.position.y + fruitB.body.position.y) / 2,
-                                         nextType);
+                let newFruit = new Fruit(
+                    (fruitA.body.position.x + fruitB.body.position.x) / 2,
+                    (fruitA.body.position.y + fruitB.body.position.y) / 2,
+                    nextType
+                );
                 fruits.push(newFruit);
-                World.add(world, newFruit.body);
-                World.remove(world, fruitA.body);
-                World.remove(world, fruitB.body);
-                removeFruit(fruitA);
-                removeFruit(fruitB);
-
-                // Update score
-                score += 10;  // Arbitrary score increment for merging
+                removeFruitFromWorld(fruitA);
+                removeFruitFromWorld(fruitB);
+                score += 10;
                 if (score > highScore) {
                     highScore = score;
                 }
-
-                // Play merge sound
+                playSound(mergeSound);
+            } else if (fruitA.type === 'watermelon') {
+                // Remove both watermelons without adding a new fruit
+                removeFruitFromWorld(fruitA);
+                removeFruitFromWorld(fruitB);
+                score += 10;
+                if (score > highScore) {
+                    highScore = score;
+                }
                 playSound(mergeSound);
             }
         }
     }
+}
+
+function removeFruit(fruit) {
+    const index = fruits.indexOf(fruit);
+    if (index !== -1) {
+        fruits.splice(index, 1);
+    }
+}
+
+function removeFruitFromWorld(fruit) {
+    if (fruit.body) {
+        World.remove(world, fruit.body);
+        fruit.body = null; // Mark the fruit as removed
+    }
+    removeFruit(fruit);
 }
 
 function getFruitByBody(body) {
@@ -267,13 +289,9 @@ function getNextFruitType(type) {
     return null;
 }
 
-function removeFruit(fruit) {
-    fruits = fruits.filter(f => f !== fruit);
-}
-
 function isGameOver() {
     for (let i = 0; i < fruits.length; i++) {
-        if (fruits[i].body.position.y < 0) {
+        if (fruits[i].body && fruits[i].body.position.y > height) {
             return true;
         }
     }
@@ -282,8 +300,11 @@ function isGameOver() {
 
 function resetGame() {
     // Remove all fruits from the world and reset score
-    for (let i = 0; i < fruits.length; i++) {
-        World.remove(world, fruits[i].body);
+    for (let i = fruits.length - 1; i >= 0; i--) {
+        if (fruits[i].body) {
+            World.remove(world, fruits[i].body);
+            fruits[i].body = null;
+        }
     }
     fruits = [];
     score = 0;

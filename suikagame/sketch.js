@@ -40,7 +40,7 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(540, 800);
+    createCanvas(500, 750);
     engine = Engine.create();
     world = engine.world;
 
@@ -107,7 +107,7 @@ function draw() {
     }
 
     // Show hint for dropping fruit
-    textSize(19,5);
+    textSize(17);
     fill(0);
     textAlign(CENTER, CENTER);
     text('Mantener el dedo en la pantalla, levantar y apoyar para soltar', width / 2, height - 13);

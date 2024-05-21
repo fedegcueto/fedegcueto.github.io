@@ -15,6 +15,7 @@ let boundaries = [];
 let score = 0;
 let highScore = 0;
 let currentFruit = null; // Track the current fruit at the top
+let isCreatingNewFruit = false; // Flag to control fruit creation delay
 
 // Preload fruit images and sounds
 let fruitImages = {};
@@ -40,12 +41,12 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(720, 1080);
+    createCanvas(925, 1643);
     engine = Engine.create();
     world = engine.world;
 
     // Create container
-    container = new Container(400, 550, 350, 100); // Narrower container
+    container = new Container(455, 870, 320, 100); // Narrower container
 
     // Create boundaries
     boundaries.push(new Boundary(width / 2, height, width, 50));  // Bottom boundary
@@ -53,7 +54,7 @@ function setup() {
     boundaries.push(new Boundary(width, height / 2, 50, height)); // Right boundary
 
     // Adjust gravity
-    engine.world.gravity.y = 0.5; // Adjusted gravity for slower falling
+    engine.world.gravity.y = 0.7; // Adjusted gravity for slower falling
 
     // Run the engine
     Engine.run(engine);
@@ -94,8 +95,8 @@ function draw() {
     // Display score
     textSize(32);
     fill(0);
-    text('Puntos: ' + score, 350, 535);
-    text('Nº1: ' + highScore, 350, 575);
+    text('Puntos: ' + score, 450, 845);
+    text('Nº1: ' + highScore, 450, 885);
 
     // Check for game over
     if (isGameOver()) {
@@ -123,7 +124,14 @@ function mousePressed() {
             currentFruit.release();
             fruits.push(currentFruit);
             playSound(dropSound);
-            currentFruit = new Fruit(mouseX, 50, getRandomFruitType(), true);
+            currentFruit = null; // Clear current fruit
+            if (!isCreatingNewFruit) {
+                isCreatingNewFruit = true;
+                setTimeout(() => {
+                    currentFruit = new Fruit(mouseX, 50, getRandomFruitType(), true);
+                    isCreatingNewFruit = false;
+                }, 300); // 1 second delay
+            }
         }
     }
 }
@@ -184,19 +192,19 @@ class Fruit {
 
     getSizeByType(type) {
         const sizes = {
-            'cherry': 20,
-            'strawberry': 30,
-            'grape': 40,
-            'dekopon': 50,
-            'persimmon': 60,
-            'apple': 70,
-            'pear': 80,
-            'peach': 90,
-            'pineapple': 100,
-            'melon': 110,
-            'watermelon': 120
+            'cherry': 40,
+            'strawberry': 60,
+            'grape': 80,
+            'dekopon': 100,
+            'persimmon': 120,
+            'apple': 140,
+            'pear': 160,
+            'peach': 180,
+            'pineapple': 200,
+            'melon': 220,
+            'watermelon': 240
         };
-        return sizes[type] || 20; // Default size
+        return sizes[type] || 40; // Default size
     }
 
     setPosition(x, y) {

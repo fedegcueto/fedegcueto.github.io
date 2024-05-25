@@ -16,6 +16,8 @@ let envidoPlayed = false;
 let envidoDeclined = false;
 let trucoPlayed = false;
 let reTrucoPlayed = false;
+let delayStarted = false;
+let delayEndTime = 0;
 
 const cardHierarchy = {
   'espada1': 14, 'basto1': 13, 'espada7': 12, 'oro7': 11,
@@ -46,7 +48,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(450, 950);
+  createCanvas(430, 900);
   initializeDeck();
   shuffleDeck();
   dealCards();
@@ -59,6 +61,11 @@ function draw() {
   drawPlayedCards();
   drawPoints();
   drawMessage();
+  
+  if (delayStarted && millis() >= delayEndTime) {
+    delayStarted = false;
+    resetHands();
+  }
 }
 
 function initializeDeck() {
@@ -99,7 +106,8 @@ function drawHands() {
 function drawPlayedCards() {
   for (let i = 0; i < playedCards.length; i++) {
     let x = playedCards[i].player === 1 ? width / 2 - 100 : width / 2 + 20;
-    drawCard(playedCards[i].card, x, height / 2 - 120 + i * 30, false);
+    let y = height / 2 - 60; // Alinea las cartas en el mismo eje Y
+    drawCard(playedCards[i].card, x, y, false);
   }
 }
 
@@ -458,7 +466,9 @@ function chooseCardForIa() {
 
 function evaluateGameWinner() {
   if (roundsWonPlayer1 > roundsWonPlayer2) {
-    if (trucoPlayed && !reTrucoPlayed && !gameState.includes('Response')) {
+    if (!trucoPlayed) {
+      pointsPlayer1 += 1;
+    } else if (trucoPlayed && !reTrucoPlayed && !gameState.includes('Response')) {
       pointsPlayer1 += 2;
     } else if (reTrucoPlayed && !gameState.includes('valeCuatroResponse')) {
       pointsPlayer1 += 3;
@@ -467,7 +477,9 @@ function evaluateGameWinner() {
     }
     message = "Jugador 1 ganó el truco";
   } else if (roundsWonPlayer2 > roundsWonPlayer1) {
-    if (trucoPlayed && !reTrucoPlayed && !gameState.includes('Response')) {
+    if (!trucoPlayed) {
+      pointsPlayer2 += 1;
+    } else if (trucoPlayed && !reTrucoPlayed && !gameState.includes('Response')) {
       pointsPlayer2 += 2;
     } else if (reTrucoPlayed && !gameState.includes('valeCuatroResponse')) {
       pointsPlayer2 += 3;
@@ -478,5 +490,11 @@ function evaluateGameWinner() {
   } else {
     message = "Empate en las rondas";
   }
-  resetHands();
+
+  if (playedCards.length === 6) {
+    delayStarted = true;
+    delayEndTime = millis() + 1900; // 2 segundos de retraso
+  } else {
+    resetHands();
+  }
 }

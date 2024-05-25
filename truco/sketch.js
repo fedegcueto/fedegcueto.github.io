@@ -4,7 +4,7 @@ let player2Hand = [];
 let playedCards = [];
 let selectedCard = null;
 let currentPlayer = 1;
-let gameState = 'selection'; // other states: 'envidoResponse', 'trucoResponse', 'reTrucoResponse', 'valeCuatroResponse'
+let gameState = 'selection';
 let pointsPlayer1 = 0;
 let pointsPlayer2 = 0;
 let cardImages = {};
@@ -14,6 +14,8 @@ let roundsWonPlayer1 = 0;
 let roundsWonPlayer2 = 0;
 let envidoPlayed = false;
 let envidoDeclined = false;
+let trucoPlayed = false;
+let reTrucoPlayed = false;
 
 const cardHierarchy = {
   'espada1': 14, 'basto1': 13, 'espada7': 12, 'oro7': 11,
@@ -95,7 +97,7 @@ function drawHands() {
 
 function drawPlayedCards() {
   for (let i = 0; i < playedCards.length; i++) {
-    drawCard(playedCards[i].card, width / 2 - 40, height / 2 - 60, false);
+    drawCard(playedCards[i].card, width / 2 - 40, height / 2 - 60 + i * 30, false);
   }
 }
 
@@ -116,13 +118,19 @@ function drawCard(card, x, y, highlighted) {
 
 function drawButtons() {
   if (gameState === 'selection') {
-    if (!envidoPlayed && !envidoDeclined) {
+    if (!envidoPlayed && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
       drawButton('Envido', 50, 600);
       drawButton('Real Envido', 150, 600);
       drawButton('Falta Envido', 250, 600);
     }
-    drawButton('Truco', 50, 650);
-    drawButton('Ir al Mazo', 150, 650);
+    if (!trucoPlayed) {
+      drawButton('Truco', 50, 650);
+    } else if (!reTrucoPlayed) {
+      drawButton('Re Truco', 150, 650);
+    } else {
+      drawButton('Vale Cuatro', 250, 650);
+    }
+    drawButton('Ir al Mazo', 350, 650);
   } else if (gameState === 'envidoResponse') {
     drawButton('Quiero', 250, 600);
     drawButton('No Quiero', 350, 600);
@@ -176,23 +184,36 @@ function mousePressed() {
         return;
       }
     }
-    if (!envidoPlayed && !envidoDeclined && mouseX > 50 && mouseX < 130 && mouseY > 600 && mouseY < 640) {
-      message = 'Envido';
-      gameState = 'envidoResponse';
-      handleIaResponse('Envido');
-    } else if (!envidoPlayed && !envidoDeclined && mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
-      message = 'Real Envido';
-      gameState = 'envidoResponse';
-      handleIaResponse('Real Envido');
-    } else if (!envidoPlayed && !envidoDeclined && mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
-      message = 'Falta Envido';
-      gameState = 'envidoResponse';
-      handleIaResponse('Falta Envido');
-    } else if (mouseX > 50 && mouseX < 130 && mouseY > 650 && mouseY < 690) {
+    if (!envidoPlayed && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
+      if (mouseX > 50 && mouseX < 130 && mouseY > 600 && mouseY < 640) {
+        message = 'Envido';
+        gameState = 'envidoResponse';
+        handleIaResponse('Envido');
+      } else if (mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
+        message = 'Real Envido';
+        gameState = 'envidoResponse';
+        handleIaResponse('Real Envido');
+      } else if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
+        message = 'Falta Envido';
+        gameState = 'envidoResponse';
+        handleIaResponse('Falta Envido');
+      }
+    }
+    if (!trucoPlayed && mouseX > 50 && mouseX < 130 && mouseY > 650 && mouseY < 690) {
       message = 'Truco';
+      trucoPlayed = true;
       gameState = 'trucoResponse';
       handleIaResponse('Truco');
-    } else if (mouseX > 150 && mouseX < 230 && mouseY > 650 && mouseY < 690) {
+    } else if (trucoPlayed && !reTrucoPlayed && mouseX > 150 && mouseX < 230 && mouseY > 650 && mouseY < 690) {
+      message = 'Re Truco';
+      reTrucoPlayed = true;
+      gameState = 'reTrucoResponse';
+      handleIaResponse('Re Truco');
+    } else if (reTrucoPlayed && mouseX > 250 && mouseX < 330 && mouseY > 650 && mouseY < 690) {
+      message = 'Vale Cuatro';
+      gameState = 'valeCuatroResponse';
+      handleIaResponse('Vale Cuatro');
+    } else if (mouseX > 350 && mouseX < 430 && mouseY > 650 && mouseY < 690) {
       message = 'Ir al Mazo';
       handleIrAlMazo();
     }
@@ -344,7 +365,7 @@ function handlePlayerResponse(response) {
   } else if (response === 'Re Truco') {
     gameState = 'reTrucoResponse';
   } else if (response === 'Vale Cuatro') {
-    gameState = 'valeCuatroResponse';
+    gameState = 'selection'; // Allow card playing to continue
   }
 }
 
@@ -370,6 +391,10 @@ function resetHands() {
   selectedCard = null;
   envidoPlayed = false;
   envidoDeclined = false;
+  trucoPlayed = false;
+  reTrucoPlayed = false;
+  roundsWonPlayer1 = 0;
+  roundsWonPlayer2 = 0;
 }
 
 function evaluateEnvido() {
@@ -384,8 +409,8 @@ function evaluateEnvido() {
     } else {
       pointsPlayer1 += 2;
     }
-    message = 'Jugador 1 ganó el envido';
-  } else if (envidoPlayer2 > envidoPlayer1) {
+    message = `Jugador 1 ganó el envido con ${envidoPlayer1} puntos`;
+  } else {
     if (message === 'Real Envido') {
       pointsPlayer2 += 3;
     } else if (message === 'Falta Envido') {
@@ -393,14 +418,7 @@ function evaluateEnvido() {
     } else {
       pointsPlayer2 += 2;
     }
-    message = 'Jugador 2 ganó el envido';
-  } else {
-    if (currentPlayer === 1) {
-      pointsPlayer1 += 2;
-    } else {
-      pointsPlayer2 += 2;
-    }
-    message = 'Empate en el envido, gana el mano';
+    message = `Jugador 2 ganó el envido con ${envidoPlayer2} puntos`;
   }
   gameState = 'selection';
 }
@@ -415,7 +433,8 @@ function calculateEnvido(hand) {
   }
   for (let suit in suits) {
     if (suits[suit].length > 1) {
-      let points = suits[suit].reduce((a, b) => a + b) + 20;
+      suits[suit].sort((a, b) => b - a);
+      let points = suits[suit][0] + suits[suit][1] + 20;
       envidoPoints = max(envidoPoints, points);
     }
   }
@@ -432,20 +451,30 @@ function handleIaTurn() {
 }
 
 function chooseCardForIa() {
-  // Basic AI logic to choose a card to play
-  // Here, just playing the first card
   return player2Hand[0];
 }
 
 function evaluateGameWinner() {
   if (roundsWonPlayer1 > roundsWonPlayer2) {
-    pointsPlayer1 += (message === 'Truco' ? 2 : 1);
+    if (trucoPlayed && !reTrucoPlayed && !gameState.includes('Response')) {
+      pointsPlayer1 += 2;
+    } else if (reTrucoPlayed && !gameState.includes('valeCuatroResponse')) {
+      pointsPlayer1 += 3;
+    } else if (gameState.includes('valeCuatroResponse')) {
+      pointsPlayer1 += 4;
+    }
     message = "Jugador 1 ganó el truco";
   } else if (roundsWonPlayer2 > roundsWonPlayer1) {
-    pointsPlayer2 += (message === 'Truco' ? 2 : 1);
+    if (trucoPlayed && !reTrucoPlayed && !gameState.includes('Response')) {
+      pointsPlayer2 += 2;
+    } else if (reTrucoPlayed && !gameState.includes('valeCuatroResponse')) {
+      pointsPlayer2 += 3;
+    } else if (gameState.includes('valeCuatroResponse')) {
+      pointsPlayer2 += 4;
+    }
     message = "Jugador 2 ganó el truco";
   } else {
-    message = "Empate en el truco";
+    message = "Empate en las rondas";
   }
   resetHands();
 }

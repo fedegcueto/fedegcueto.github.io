@@ -42,17 +42,18 @@ function preload() {
     }
   }
   backImage = loadImage('assets/back.png');
+  backgr = loadImage('assets/background.jpg');
 }
 
 function setup() {
-  createCanvas(400, 800);
+  createCanvas(450, 950);
   initializeDeck();
   shuffleDeck();
   dealCards();
 }
 
 function draw() {
-  background(255);
+  background(backgr);
   drawHands();
   drawButtons();
   drawPlayedCards();
@@ -97,7 +98,8 @@ function drawHands() {
 
 function drawPlayedCards() {
   for (let i = 0; i < playedCards.length; i++) {
-    drawCard(playedCards[i].card, width / 2 - 40, height / 2 - 60 + i * 30, false);
+    let x = playedCards[i].player === 1 ? width / 2 - 100 : width / 2 + 20;
+    drawCard(playedCards[i].card, x, height / 2 - 120 + i * 30, false);
   }
 }
 
@@ -158,7 +160,7 @@ function drawButton(label, x, y) {
 }
 
 function drawPoints() {
-  fill(0);
+  fill(255);
   textSize(16);
   textAlign(LEFT, TOP);
   text(`Puntos Jugador 1: ${pointsPlayer1}`, 10, 10);
@@ -169,7 +171,7 @@ function drawMessage() {
   fill(0);
   textSize(24);
   textAlign(CENTER, CENTER);
-  text(message, width / 2, height / 2);
+  text(message, width / 2, height / 4 + 50);
 }
 
 function mousePressed() {

@@ -182,10 +182,10 @@ function drawMessage() {
   text(message, width / 2, height / 4 + 50);
 }
 
-function touchStarted() {
+function handleClickOrTouch(x, y) {
   if (gameState === 'selection') {
     for (let i = 0; i < player1Hand.length; i++) {
-      if (touchX > 50 + i * 100 && touchX < 130 + i * 100 && touchY > 700 && touchY < 820) {
+      if (x > 50 + i * 100 && x < 130 + i * 100 && y > 700 && y < 820) {
         selectedCard = i;
         playCard(player1Hand[i], 1);
         player1Hand.splice(i, 1);
@@ -195,67 +195,75 @@ function touchStarted() {
       }
     }
     if (!envidoPlayed && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
-      if (touchX > 50 && touchX < 130 && touchY > 600 && touchY < 640) {
+      if (x > 50 && x < 130 && y > 600 && y < 640) {
         message = 'Envido';
         gameState = 'envidoResponse';
         handleIaResponse('Envido');
-      } else if (touchX > 150 && touchX < 230 && touchY > 600 && touchY < 640) {
+      } else if (x > 150 && x < 230 && y > 600 && y < 640) {
         message = 'Real Envido';
         gameState = 'envidoResponse';
         handleIaResponse('Real Envido');
-      } else if (touchX > 250 && touchX < 330 && touchY > 600 && touchY < 640) {
+      } else if (x > 250 && x < 330 && y > 600 && y < 640) {
         message = 'Falta Envido';
         gameState = 'envidoResponse';
         handleIaResponse('Falta Envido');
       }
     }
-    if (!trucoPlayed && touchX > 50 && touchX < 130 && touchY > 650 && touchY < 690) {
+    if (!trucoPlayed && x > 50 && x < 130 && y > 650 && y < 690) {
       message = 'Truco';
       trucoPlayed = true;
       gameState = 'trucoResponse';
       handleIaResponse('Truco');
-    } else if (trucoPlayed && !reTrucoPlayed && touchX > 150 && touchX < 230 && touchY > 650 && touchY < 690) {
+    } else if (trucoPlayed && !reTrucoPlayed && x > 150 && x < 230 && y > 650 && y < 690) {
       message = 'Re Truco';
       reTrucoPlayed = true;
       gameState = 'reTrucoResponse';
       handleIaResponse('Re Truco');
-    } else if (reTrucoPlayed && touchX > 250 && touchX < 330 && touchY > 650 && touchY < 690) {
+    } else if (reTrucoPlayed && x > 250 && x < 330 && y > 650 && y < 690) {
       message = 'Vale Cuatro';
       gameState = 'valeCuatroResponse';
       handleIaResponse('Vale Cuatro');
-    } else if (touchX > 350 && touchX < 430 && touchY > 650 && touchY < 690) {
+    } else if (x > 350 && x < 430 && y > 650 && y < 690) {
       message = 'Ir al Mazo';
       handleIrAlMazo();
     }
   } else if (gameState === 'envidoResponse') {
-    if (touchX > 250 && touchX < 330 && touchY > 600 && touchY < 640) {
+    if (x > 250 && x < 330 && y > 600 && y < 640) {
       handlePlayerResponse('Quiero');
-    } else if (touchX > 350 && touchX < 430 && touchY > 600 && touchY < 640) {
+    } else if (x > 350 && x < 430 && y > 600 && y < 640) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'trucoResponse') {
-    if (touchX > 50 && touchX < 130 && touchY > 600 && touchY < 640) {
+    if (x > 50 && x < 130 && y > 600 && y < 640) {
       handlePlayerResponse('Quiero');
-    } else if (touchX > 150 && touchX < 230 && touchY > 600 && touchY < 640) {
+    } else if (x > 150 && x < 230 && y > 600 && y < 640) {
       handlePlayerResponse('Re Truco');
-    } else if (touchX > 250 && touchX < 330 && touchY > 600 && touchY < 640) {
+    } else if (x > 250 && x < 330 && y > 600 && y < 640) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'reTrucoResponse') {
-    if (touchX > 50 && touchX < 130 && touchY > 600 && touchY < 640) {
+    if (x > 50 && x < 130 && y > 600 && y < 640) {
       handlePlayerResponse('Quiero');
-    } else if (touchX > 150 && touchX < 230 && touchY > 600 && touchY < 640) {
+    } else if (x > 150 && x < 230 && y > 600 && y < 640) {
       handlePlayerResponse('Vale Cuatro');
-    } else if (touchX > 250 && touchX < 330 && touchY > 600 && touchY < 640) {
+    } else if (x > 250 && x < 330 && y > 600 && y < 640) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'valeCuatroResponse') {
-    if (touchX > 150 && touchX < 230 && touchY > 600 && touchY < 640) {
+    if (x > 150 && x < 230 && y > 600 && y < 640) {
       handlePlayerResponse('Quiero');
-    } else if (touchX > 250 && touchX < 330 && touchY > 600 && touchY < 640) {
+    } else if (x > 250 && x < 330 && y > 600 && y < 640) {
       handlePlayerResponse('No Quiero');
     }
   }
+}
+
+function mousePressed() {
+  handleClickOrTouch(mouseX, mouseY);
+}
+
+function touchStarted() {
+  handleClickOrTouch(touchX, touchY);
 }
 
 function playCard(card, player) {

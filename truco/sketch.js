@@ -106,7 +106,7 @@ function drawHands() {
 function drawPlayedCards() {
   for (let i = 0; i < playedCards.length; i++) {
     let x = playedCards[i].player === 1 ? width / 2 - 100 : width / 2 + 20;
-    let y = height / 2 - 60; // Alinea las cartas en el mismo eje Y
+    let y = height / 2 - 60;
     drawCard(playedCards[i].card, x, y, false);
   }
 }
@@ -135,9 +135,9 @@ function drawButtons() {
     }
     if (!trucoPlayed) {
       drawButton('Truco', 50, 650);
-    } else if (!reTrucoPlayed) {
+    } else if (trucoPlayed && currentPlayer === 2 && !reTrucoPlayed) {
       drawButton('Re Truco', 150, 650);
-    } else {
+    } else if (reTrucoPlayed && currentPlayer === 1) {
       drawButton('Vale Cuatro', 250, 650);
     }
     drawButton('Ir al Mazo', 350, 650);
@@ -182,10 +182,10 @@ function drawMessage() {
   text(message, width / 2, height / 4 + 50);
 }
 
-function mousePressed() {
+function touchStarted() {
   if (gameState === 'selection') {
     for (let i = 0; i < player1Hand.length; i++) {
-      if (mouseX > 50 + i * 100 && mouseX < 130 + i * 100 && mouseY > 700 && mouseY < 820) {
+      if (touchX > 50 + i * 100 && touchX < 130 + i * 100 && touchY > 700 && touchY < 820) {
         selectedCard = i;
         playCard(player1Hand[i], 1);
         player1Hand.splice(i, 1);
@@ -195,64 +195,64 @@ function mousePressed() {
       }
     }
     if (!envidoPlayed && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
-      if (mouseX > 50 && mouseX < 130 && mouseY > 600 && mouseY < 640) {
+      if (touchX > 50 && touchX < 130 && touchY > 600 && touchY < 640) {
         message = 'Envido';
         gameState = 'envidoResponse';
         handleIaResponse('Envido');
-      } else if (mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
+      } else if (touchX > 150 && touchX < 230 && touchY > 600 && touchY < 640) {
         message = 'Real Envido';
         gameState = 'envidoResponse';
         handleIaResponse('Real Envido');
-      } else if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
+      } else if (touchX > 250 && touchX < 330 && touchY > 600 && touchY < 640) {
         message = 'Falta Envido';
         gameState = 'envidoResponse';
         handleIaResponse('Falta Envido');
       }
     }
-    if (!trucoPlayed && mouseX > 50 && mouseX < 130 && mouseY > 650 && mouseY < 690) {
+    if (!trucoPlayed && touchX > 50 && touchX < 130 && touchY > 650 && touchY < 690) {
       message = 'Truco';
       trucoPlayed = true;
       gameState = 'trucoResponse';
       handleIaResponse('Truco');
-    } else if (trucoPlayed && !reTrucoPlayed && mouseX > 150 && mouseX < 230 && mouseY > 650 && mouseY < 690) {
+    } else if (trucoPlayed && !reTrucoPlayed && touchX > 150 && touchX < 230 && touchY > 650 && touchY < 690) {
       message = 'Re Truco';
       reTrucoPlayed = true;
       gameState = 'reTrucoResponse';
       handleIaResponse('Re Truco');
-    } else if (reTrucoPlayed && mouseX > 250 && mouseX < 330 && mouseY > 650 && mouseY < 690) {
+    } else if (reTrucoPlayed && touchX > 250 && touchX < 330 && touchY > 650 && touchY < 690) {
       message = 'Vale Cuatro';
       gameState = 'valeCuatroResponse';
       handleIaResponse('Vale Cuatro');
-    } else if (mouseX > 350 && mouseX < 430 && mouseY > 650 && mouseY < 690) {
+    } else if (touchX > 350 && touchX < 430 && touchY > 650 && touchY < 690) {
       message = 'Ir al Mazo';
       handleIrAlMazo();
     }
   } else if (gameState === 'envidoResponse') {
-    if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
+    if (touchX > 250 && touchX < 330 && touchY > 600 && touchY < 640) {
       handlePlayerResponse('Quiero');
-    } else if (mouseX > 350 && mouseX < 430 && mouseY > 600 && mouseY < 640) {
+    } else if (touchX > 350 && touchX < 430 && touchY > 600 && touchY < 640) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'trucoResponse') {
-    if (mouseX > 50 && mouseX < 130 && mouseY > 600 && mouseY < 640) {
+    if (touchX > 50 && touchX < 130 && touchY > 600 && touchY < 640) {
       handlePlayerResponse('Quiero');
-    } else if (mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
+    } else if (touchX > 150 && touchX < 230 && touchY > 600 && touchY < 640) {
       handlePlayerResponse('Re Truco');
-    } else if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
+    } else if (touchX > 250 && touchX < 330 && touchY > 600 && touchY < 640) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'reTrucoResponse') {
-    if (mouseX > 50 && mouseX < 130 && mouseY > 600 && mouseY < 640) {
+    if (touchX > 50 && touchX < 130 && touchY > 600 && touchY < 640) {
       handlePlayerResponse('Quiero');
-    } else if (mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
+    } else if (touchX > 150 && touchX < 230 && touchY > 600 && touchY < 640) {
       handlePlayerResponse('Vale Cuatro');
-    } else if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
+    } else if (touchX > 250 && touchX < 330 && touchY > 600 && touchY < 640) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'valeCuatroResponse') {
-    if (mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
+    if (touchX > 150 && touchX < 230 && touchY > 600 && touchY < 640) {
       handlePlayerResponse('Quiero');
-    } else if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
+    } else if (touchX > 250 && touchX < 330 && touchY > 600 && touchY < 640) {
       handlePlayerResponse('No Quiero');
     }
   }
@@ -288,9 +288,10 @@ function evaluateRound() {
   }
 }
 
+// Maneja la respuesta de la IA para el Truco
 function handleIaResponse(call) {
   if (call === 'Envido' || call === 'Real Envido' || call === 'Falta Envido') {
-    let response = random(['Quiero', 'No Quiero']);
+    let response = decideEnvidoResponse();
     message = response;
     if (response === 'Quiero') {
       evaluateEnvido();
@@ -308,11 +309,22 @@ function handleIaResponse(call) {
   }
 }
 
+function decideEnvidoResponse() {
+  // Mejora de la lógica de respuesta de envido
+  let envidoPlayer1 = calculateEnvido(player1Hand);
+  let envidoPlayer2 = calculateEnvido(player2Hand);
+  if (envidoPlayer2 >= envidoPlayer1) {
+    return 'Quiero';
+  }
+  return random(['Quiero', 'No Quiero']);
+}
+
+// Función para manejar la respuesta de la IA al Truco
 function handleIaTruco() {
-  let response = random(['Quiero', 'No Quiero', 'Re Truco']);
+  let response = decideTrucoResponse();
   message = response;
   if (response === 'Quiero') {
-    gameState = 'selection'; // Allow card playing to continue
+    gameState = 'selection'; // Continuar con el juego
   } else if (response === 'No Quiero') {
     pointsPlayer1 += 1;
     resetHands();
@@ -322,13 +334,25 @@ function handleIaTruco() {
   }
 }
 
+function decideTrucoResponse() {
+  // Mejora de la lógica de respuesta de truco
+  let strongCards = player2Hand.filter(card => cardHierarchy[`${card.suit}${card.value}`] >= 10).length;
+  if (strongCards > 1) {
+    return 'Quiero';
+  } else if (strongCards === 1) {
+    return random(['Quiero', 'Re Truco']);
+  }
+  return 'No Quiero';
+}
+
+// Función para manejar la respuesta de la IA al Re Truco
 function handleIaReTruco() {
-  let response = random(['Quiero', 'No Quiero', 'Vale Cuatro']);
+  let response = decideReTrucoResponse();
   message = response;
   if (response === 'Quiero') {
-    gameState = 'selection'; // Allow card playing to continue
+    gameState = 'selection'; // Continuar con el juego
   } else if (response === 'No Quiero') {
-    pointsPlayer1 += 2;
+    pointsPlayer1 += 2; // Si no quiere, se otorgan 2 puntos al jugador que cantó Re Truco
     resetHands();
     gameState = 'selection';
   } else if (response === 'Vale Cuatro') {
@@ -336,28 +360,41 @@ function handleIaReTruco() {
   }
 }
 
+function decideReTrucoResponse() {
+  // Mejora de la lógica de respuesta de re truco
+  let strongCards = player2Hand.filter(card => cardHierarchy[`${card.suit}${card.value}`] >= 10).length;
+  if (strongCards === 3) {
+    return 'Quiero';
+  } else if (strongCards === 2) {
+    return random(['Quiero', 'Vale Cuatro']);
+  }
+  return 'No Quiero';
+}
+
+// Función para manejar la respuesta de la IA al Vale Cuatro
 function handleIaValeCuatro() {
   let response = random(['Quiero', 'No Quiero']);
   message = response;
   if (response === 'Quiero') {
-    gameState = 'selection'; // Allow card playing to continue
+    gameState = 'selection'; // Continuar con el juego
   } else {
-    pointsPlayer1 += 3;
+    pointsPlayer1 += 3; // Si no quiere, se otorgan 3 puntos al jugador que cantó Vale Cuatro
     resetHands();
     gameState = 'selection';
   }
 }
 
+// Maneja la respuesta del jugador
 function handlePlayerResponse(response) {
   if (response === 'Quiero') {
     if (gameState === 'envidoResponse') {
       evaluateEnvido();
     } else if (gameState === 'trucoResponse') {
-      gameState = 'selection'; // Allow card playing to continue
+      gameState = 'selection'; // Continuar con el juego
     } else if (gameState === 'reTrucoResponse') {
-      gameState = 'selection'; // Allow card playing to continue
+      gameState = 'selection'; // Continuar con el juego
     } else if (gameState === 'valeCuatroResponse') {
-      gameState = 'selection'; // Allow card playing to continue
+      gameState = 'selection'; // Continuar con el juego
     }
   } else if (response === 'No Quiero') {
     if (gameState === 'envidoResponse') {
@@ -368,14 +405,14 @@ function handlePlayerResponse(response) {
     } else if (gameState === 'reTrucoResponse') {
       pointsPlayer2 += 2;
     } else if (gameState === 'valeCuatroResponse') {
-      pointsPlayer2 += 3;
+      pointsPlayer2 += 3; // Si no se quiere, se otorgan 3 puntos al jugador que cantó Vale Cuatro
     }
     resetHands();
     gameState = 'selection';
   } else if (response === 'Re Truco') {
     gameState = 'reTrucoResponse';
   } else if (response === 'Vale Cuatro') {
-    gameState = 'selection'; // Allow card playing to continue
+    gameState = 'selection'; // Continuar con el juego
   }
 }
 
@@ -464,27 +501,28 @@ function chooseCardForIa() {
   return player2Hand[0];
 }
 
+// Evalúa el ganador del juego y asigna los puntos correctamente
 function evaluateGameWinner() {
   if (roundsWonPlayer1 > roundsWonPlayer2) {
     if (!trucoPlayed) {
       pointsPlayer1 += 1;
-    } else if (trucoPlayed && !reTrucoPlayed && !gameState.includes('Response')) {
+    } else if (trucoPlayed && !reTrucoPlayed) {
       pointsPlayer1 += 2;
     } else if (reTrucoPlayed && !gameState.includes('valeCuatroResponse')) {
-      pointsPlayer1 += 3;
+      pointsPlayer1 += 3; // Asignar 3 puntos si se gana con Re Truco
     } else if (gameState.includes('valeCuatroResponse')) {
-      pointsPlayer1 += 4;
+      pointsPlayer1 += 4; // Asignar 4 puntos si se gana con Vale Cuatro
     }
     message = "Jugador 1 ganó el truco";
   } else if (roundsWonPlayer2 > roundsWonPlayer1) {
     if (!trucoPlayed) {
       pointsPlayer2 += 1;
-    } else if (trucoPlayed && !reTrucoPlayed && !gameState.includes('Response')) {
-      pointsPlayer2 += 2;
-    } else if (reTrucoPlayed && !gameState.includes('valeCuatroResponse')) {
+    } else if (trucoPlayed && !reTrucoPlayed) {
       pointsPlayer2 += 3;
+    } else if (reTrucoPlayed && !gameState.includes('valeCuatroResponse')) {
+      pointsPlayer2 += 3; // Asignar 3 puntos si se gana con Re Truco
     } else if (gameState.includes('valeCuatroResponse')) {
-      pointsPlayer2 += 4;
+      pointsPlayer2 += 4; // Asignar 4 puntos si se gana con Vale Cuatro
     }
     message = "Jugador 2 ganó el truco";
   } else {

@@ -9,6 +9,7 @@ let pointsPlayer1 = 0;
 let pointsPlayer2 = 0;
 let cardImages = {};
 let backImage;
+let backgr;
 let message = "";
 let roundsWonPlayer1 = 0;
 let roundsWonPlayer2 = 0;
@@ -53,7 +54,8 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight); // Dynamic canvas size
+  let canvas = createCanvas(430, 900);
+  canvas.parent('game-container');
   initializeDeck();
   shuffleDeck();
   dealCards();
@@ -109,24 +111,24 @@ function dealCards() {
 }
 
 function drawHands() {
-  let cardWidth = width / 10;
-  let cardHeight = cardWidth * 1.5;
-  
+  let handWidth = 80;
+  let handHeight = 120;
+  let player1Y = height - handHeight - 20;
+  let player2Y = 20;
+
   for (let i = 0; i < player1Hand.length; i++) {
-    let x = width * 0.1 + i * cardWidth * 1.2;
-    let y = height * 0.75;
-    let hover = mouseX > x && mouseX < x + cardWidth && mouseY > y && mouseY < y + cardHeight;
-    drawCard(player1Hand[i], x, y, i === selectedCard, hover);
+    let x = (width / 2) - (player1Hand.length / 2) * handWidth + i * handWidth;
+    let hover = mouseX > x && mouseX < x + handWidth && mouseY > player1Y && mouseY < player1Y + handHeight;
+    drawCard(player1Hand[i], x, player1Y, i === selectedCard, hover);
   }
+
   for (let i = 0; i < player2Hand.length; i++) {
-    drawCard({ suit: 'back', value: 0 }, width * 0.1 + i * cardWidth * 1.2, height * 0.05, false, false);
+    let x = (width / 2) - (player2Hand.length / 2) * handWidth + i * handWidth;
+    drawCard({ suit: 'back', value: 0 }, x, player2Y, false, false);
   }
 }
 
 function drawPlayedCards() {
-  let cardWidth = width / 10;
-  let cardHeight = cardWidth * 1.5;
-
   for (let i = 0; i < playedCards.length; i++) {
     let card = playedCards[i];
     if (card.moving) {
@@ -141,14 +143,11 @@ function drawPlayedCards() {
 }
 
 function drawCard(card, x, y, highlighted, hover) {
-  let cardWidth = width / 10;
-  let cardHeight = cardWidth * 1.5;
-  
   push();
   if (hover) {
-    translate(x + cardWidth / 2, y + cardHeight / 2);
+    translate(x + 40, y + 60);
     scale(1.1);
-    translate(-cardWidth / 2, -cardHeight / 2);
+    translate(-40, -60);
   } else {
     translate(x, y);
   }
@@ -160,79 +159,75 @@ function drawCard(card, x, y, highlighted, hover) {
   }
   if (card.suit !== 'back') {
     let cardName = `${card.suit}${card.value}`;
-    image(cardImages[cardName], 0, 0, cardWidth, cardHeight);
+    image(cardImages[cardName], 0, 0, 80, 120);
   } else {
-    image(backImage, 0, 0, cardWidth, cardHeight);
+    image(backImage, 0, 0, 80, 120);
   }
   pop();
 }
 
 function drawButtons() {
-  let buttonWidth = width / 5;
-  let buttonHeight = buttonWidth / 3;
-  let buttonY = height * 0.85;
-  let buttonSpacing = buttonWidth * 0.1;
-  
+  let buttonWidth = 100;
+  let buttonHeight = 50;
+  let buttonY = height / 2 + 100;
+
   if (gameState === 'selection') {
     if (!envidoCalled && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
-      drawButton('Envido', width * 0.1, buttonY);
-      drawButton('Real Envido', width * 0.1 + buttonWidth + buttonSpacing, buttonY);
-      drawButton('Falta Envido', width * 0.1 + 2 * (buttonWidth + buttonSpacing), buttonY);
+      drawButton('Envido', 50, buttonY);
+      drawButton('Real Envido', 160, buttonY);
+      drawButton('Falta Envido', 270, buttonY);
     }
     if (!trucoPlayed) {
-      drawButton('Truco', width * 0.1, buttonY + buttonHeight + buttonSpacing);
+      drawButton('Truco', 50, buttonY + 60);
     } else if (trucoPlayed && currentPlayer === 2 && !reTrucoPlayed) {
-      drawButton('Re Truco', width * 0.1 + buttonWidth + buttonSpacing, buttonY + buttonHeight + buttonSpacing);
+      drawButton('Re Truco', 160, buttonY + 60);
     } else if (reTrucoPlayed && currentPlayer === 1) {
-      drawButton('Vale Cuatro', width * 0.1 + 2 * (buttonWidth + buttonSpacing), buttonY + buttonHeight + buttonSpacing);
+      drawButton('Vale Cuatro', 270, buttonY + 60);
     }
-    drawButton('Ir al Mazo', width * 0.1 + 3 * (buttonWidth + buttonSpacing), buttonY + buttonHeight + buttonSpacing);
+    drawButton('Ir al Mazo', 380, buttonY + 60);
   } else if (gameState === 'envidoResponse') {
-    drawButton('Quiero', width * 0.1 + buttonWidth + buttonSpacing, buttonY);
-    drawButton('No Quiero', width * 0.1 + 2 * (buttonWidth + buttonSpacing), buttonY);
+    drawButton('Quiero', 250, buttonY);
+    drawButton('No Quiero', 360, buttonY);
   } else if (gameState === 'trucoResponse') {
-    drawButton('Quiero', width * 0.1, buttonY);
-    drawButton('Re Truco', width * 0.1 + buttonWidth + buttonSpacing, buttonY);
-    drawButton('No Quiero', width * 0.1 + 2 * (buttonWidth + buttonSpacing), buttonY);
+    drawButton('Quiero', 50, buttonY);
+    drawButton('Re Truco', 160, buttonY);
+    drawButton('No Quiero', 270, buttonY);
   } else if (gameState === 'reTrucoResponse') {
-    drawButton('Quiero', width * 0.1, buttonY);
-    drawButton('Vale Cuatro', width * 0.1 + buttonWidth + buttonSpacing, buttonY);
-    drawButton('No Quiero', width * 0.1 + 2 * (buttonWidth + buttonSpacing), buttonY);
+    drawButton('Quiero', 50, buttonY);
+    drawButton('Vale Cuatro', 160, buttonY);
+    drawButton('No Quiero', 270, buttonY);
   } else if (gameState === 'valeCuatroResponse') {
-    drawButton('Quiero', width * 0.1 + buttonWidth + buttonSpacing, buttonY);
-    drawButton('No Quiero', width * 0.1 + 2 * (buttonWidth + buttonSpacing), buttonY);
+    drawButton('Quiero', 160, buttonY);
+    drawButton('No Quiero', 270, buttonY);
   }
 }
 
 function drawButton(label, x, y) {
-  let buttonWidth = width / 5;
-  let buttonHeight = buttonWidth / 3;
-  
-  if (mouseX > x && mouseX < x + buttonWidth && mouseY > y && mouseY < y + buttonHeight) {
+  if (mouseX > x && mouseX < x + 80 && mouseY > y && mouseY < y + 40) {
     fill(0, 0, 150);
   } else {
     fill(0, 0, 255);
   }
-  rect(x, y, buttonWidth, buttonHeight, 5);
+  rect(x, y, 80, 40);
   fill(255);
   textSize(16);
   textAlign(CENTER, CENTER);
-  text(label, x + buttonWidth / 2, y + buttonHeight / 2);
+  text(label, x + 40, y + 20);
 }
 
 function drawPoints() {
   fill(255);
   textSize(16);
   textAlign(LEFT, TOP);
-  text(`Punten Speler 1: ${pointsPlayer1}`, 10, 10);
-  text(`Punten Speler 2: ${pointsPlayer2}`, 10, 30);
+  text(`Puntos Jugador 1: ${pointsPlayer1}`, 10, 10);
+  text(`Puntos Jugador 2: ${pointsPlayer2}`, 10, 30);
 }
 
 function drawMessage() {
   fill(0, 0, 0, messageAlpha);
   textSize(24);
   textAlign(CENTER, CENTER);
-  text(message, width / 2, height * 0.5);
+  text(message, width / 2, height / 4 + 50);
   if (messageAlpha < 255) {
     messageAlpha += 5;
   }
@@ -244,33 +239,27 @@ function drawShuffleAnimation() {
   textSize(32);
   fill(0);
   textAlign(CENTER, CENTER);
-  text("Schudden...", width / 2, height / 2);
+  text("Barajando...", width / 2, height / 2);
   for (let i = 0; i < 10; i++) {
     let x = random(width);
     let y = random(height);
     let cardName = `${deck[i % deck.length].suit}${deck[i % deck.length].value}`;
-    image(cardImages[cardName], x, y, width / 20, height / 12);
+    image(cardImages[cardName], x, y, 40, 60);
   }
 }
 
+// Fix: Add touchStarted function for mobile devices
 function touchStarted() {
   mousePressed();
   return false; // prevent default
 }
 
 function mousePressed() {
-  let cardWidth = width / 10;
-  let cardHeight = cardWidth * 1.5;
-  let buttonWidth = width / 5;
-  let buttonHeight = buttonWidth / 3;
-  let buttonY = height * 0.85;
-  let buttonSpacing = buttonWidth * 0.1;
-  
   if (gameState === 'selection') {
     for (let i = 0; i < player1Hand.length; i++) {
-      let x = width * 0.1 + i * cardWidth * 1.2;
-      let y = height * 0.75;
-      if (mouseX > x && mouseX < x + cardWidth && mouseY > y && mouseY < y + cardHeight) {
+      let x = (width / 2) - (player1Hand.length / 2) * 80 + i * 80;
+      let y = height - 140;
+      if (mouseX > x && mouseX < x + 80 && mouseY > y && mouseY < y + 120) {
         selectedCard = i;
         playCard(player1Hand[i], 1);
         player1Hand.splice(i, 1);
@@ -280,83 +269,80 @@ function mousePressed() {
       }
     }
     if (!envidoCalled && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
-      if (mouseX > width * 0.1 && mouseX < width * 0.1 + buttonWidth && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+      if (mouseX > 50 && mouseX < 130 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
         message = 'Envido';
         gameState = 'envidoResponse';
-        envidoType = 'Envido';
+        envidoType = 'Envido'; // Track the Envido type
         handleIaResponse('Envido');
-      } else if (mouseX > width * 0.1 + buttonWidth + buttonSpacing && mouseX < width * 0.1 + 2 * buttonWidth + buttonSpacing && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+      } else if (mouseX > 160 && mouseX < 240 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
         message = 'Real Envido';
         gameState = 'envidoResponse';
-        envidoType = 'Real Envido';
+        envidoType = 'Real Envido'; // Track the Envido type
         handleIaResponse('Real Envido');
-      } else if (mouseX > width * 0.1 + 2 * buttonWidth + 2 * buttonSpacing && mouseX < width * 0.1 + 3 * buttonWidth + 2 * buttonSpacing && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+      } else if (mouseX > 270 && mouseX < 350 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
         message = 'Falta Envido';
         gameState = 'envidoResponse';
-        envidoType = 'Falta Envido';
+        envidoType = 'Falta Envido'; // Track the Envido type
         handleIaResponse('Falta Envido');
       }
     }
-    if (!trucoPlayed && mouseX > width * 0.1 && mouseX < width * 0.1 + buttonWidth && mouseY > buttonY + buttonHeight + buttonSpacing && mouseY < buttonY + 2 * buttonHeight + buttonSpacing) {
+    if (!trucoPlayed && mouseX > 50 && mouseX < 130 && mouseY > height / 2 + 160 && mouseY < height / 2 + 200) {
       message = 'Truco';
       trucoPlayed = true;
       gameState = 'trucoResponse';
       handleIaResponse('Truco');
-    } else if (trucoPlayed && !reTrucoPlayed && mouseX > width * 0.1 + buttonWidth + buttonSpacing && mouseX < width * 0.1 + 2 * buttonWidth + buttonSpacing && mouseY > buttonY + buttonHeight + buttonSpacing && mouseY < buttonY + 2 * buttonHeight + buttonSpacing) {
+    } else if (trucoPlayed && !reTrucoPlayed && mouseX > 160 && mouseX < 240 && mouseY > height / 2 + 160 && mouseY < height / 2 + 200) {
       message = 'Re Truco';
       reTrucoPlayed = true;
       gameState = 'reTrucoResponse';
       handleIaResponse('Re Truco');
-    } else if (reTrucoPlayed && mouseX > width * 0.1 + 2 * buttonWidth + 2 * buttonSpacing && mouseX < width * 0.1 + 3 * buttonWidth + 2 * buttonSpacing && mouseY > buttonY + buttonHeight + buttonSpacing && mouseY < buttonY + 2 * buttonHeight + buttonSpacing) {
+    } else if (reTrucoPlayed && mouseX > 270 && mouseX < 350 && mouseY > height / 2 + 160 && mouseY < height / 2 + 200) {
       message = 'Vale Cuatro';
       gameState = 'valeCuatroResponse';
       handleIaResponse('Vale Cuatro');
-    } else if (mouseX > width * 0.1 + 3 * buttonWidth + 3 * buttonSpacing && mouseX < width * 0.1 + 4 * buttonWidth + 3 * buttonSpacing && mouseY > buttonY + buttonHeight + buttonSpacing && mouseY < buttonY + 2 * buttonHeight + buttonSpacing) {
+    } else if (mouseX > 380 && mouseX < 460 && mouseY > height / 2 + 160 && mouseY < height / 2 + 200) {
       message = 'Ir al Mazo';
       handleIrAlMazo();
     }
   } else if (gameState === 'envidoResponse') {
-    if (mouseX > width * 0.1 + buttonWidth + buttonSpacing && mouseX < width * 0.1 + 2 * buttonWidth + buttonSpacing && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+    if (mouseX > 250 && mouseX < 330 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
       handlePlayerResponse('Quiero');
-    } else if (mouseX > width * 0.1 + 2 * buttonWidth + 2 * buttonSpacing && mouseX < width * 0.1 + 3 * buttonWidth + 2 * buttonSpacing && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+    } else if (mouseX > 360 && mouseX < 440 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'trucoResponse') {
-    if (mouseX > width * 0.1 && mouseX < width * 0.1 + buttonWidth && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+    if (mouseX > 50 && mouseX < 130 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
       handlePlayerResponse('Quiero');
-    } else if (mouseX > width * 0.1 + buttonWidth + buttonSpacing && mouseX < width * 0.1 + 2 * buttonWidth + buttonSpacing && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+    } else if (mouseX > 160 && mouseX < 240 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
       handlePlayerResponse('Re Truco');
-    } else if (mouseX > width * 0.1 + 2 * buttonWidth + 2 * buttonSpacing && mouseX < width * 0.1 + 3 * buttonWidth + 2 * buttonSpacing && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+    } else if (mouseX > 270 && mouseX < 350 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'reTrucoResponse') {
-    if (mouseX > width * 0.1 && mouseX < width * 0.1 + buttonWidth && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+    if (mouseX > 50 && mouseX < 130 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
       handlePlayerResponse('Quiero');
-    } else if (mouseX > width * 0.1 + buttonWidth + buttonSpacing && mouseX < width * 0.1 + 2 * buttonWidth + buttonSpacing && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+    } else if (mouseX > 160 && mouseX < 240 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
       handlePlayerResponse('Vale Cuatro');
-    } else if (mouseX > width * 0.1 + 2 * buttonWidth + 2 * buttonSpacing && mouseX < width * 0.1 + 3 * buttonWidth + 2 * buttonSpacing && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+    } else if (mouseX > 270 && mouseX < 350 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'valeCuatroResponse') {
-    if (mouseX > width * 0.1 + buttonWidth + buttonSpacing && mouseX < width * 0.1 + 2 * buttonWidth + buttonSpacing && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+    if (mouseX > 160 && mouseX < 240 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
       handlePlayerResponse('Quiero');
-    } else if (mouseX > width * 0.1 + 2 * buttonWidth + 2 * buttonSpacing && mouseX < width * 0.1 + 3 * buttonWidth + 2 * buttonSpacing && mouseY > buttonY && mouseY < buttonY + buttonHeight) {
+    } else if (mouseX > 270 && mouseX < 350 && mouseY > height / 2 + 100 && mouseY < height / 2 + 140) {
       handlePlayerResponse('No Quiero');
     }
   }
 }
 
 function playCard(card, player) {
-  let cardWidth = width / 10;
-  let cardHeight = cardWidth * 1.5;
-  
   let cardMove = {
     card: card,
     player: player,
-    x: player === 1 ? width * 0.1 + selectedCard * cardWidth * 1.2 : width * 0.1 + player2Hand.indexOf(card) * cardWidth * 1.2,
-    y: player === 1 ? height * 0.75 : height * 0.05,
-    targetX: player === 1 ? width / 2 - cardWidth : width / 2 + 20,
-    targetY: height / 2 - cardHeight / 2,
+    x: player === 1 ? 50 + selectedCard * 100 : 50 + player2Hand.indexOf(card) * 100,
+    y: player === 1 ? height - 140 : 20,
+    targetX: player === 1 ? width / 2 - 100 : width / 2 + 20,
+    targetY: height / 2 - 60,
     moving: true
   };
   playedCards.push(cardMove);
@@ -373,12 +359,12 @@ function evaluateRound() {
   
   if (cardHierarchy[card1Name] > cardHierarchy[card2Name]) {
     currentPlayer = playedCards[playedCards.length - 2].player;
-    message = `Speler ${currentPlayer} won de ronde`;
+    message = `Jugador ${currentPlayer} ganó la ronda`;
     if (currentPlayer === 1) roundsWonPlayer1++;
     else roundsWonPlayer2++;
   } else {
     currentPlayer = playedCards[playedCards.length - 1].player;
-    message = `Speler ${currentPlayer} won de ronde`;
+    message = `Jugador ${currentPlayer} ganó la ronda`;
     if (currentPlayer === 1) roundsWonPlayer1++;
     else roundsWonPlayer2++;
   }
@@ -388,7 +374,7 @@ function evaluateRound() {
   }
 }
 
-// Handle the IA response for Truco and Envido
+// Maneja la respuesta de la IA para el Truco y Envido
 function handleIaResponse(call) {
   if (call === 'Envido' || call === 'Real Envido' || call === 'Falta Envido') {
     let response = decideEnvidoResponse();
@@ -411,7 +397,7 @@ function handleIaResponse(call) {
 }
 
 function decideEnvidoResponse() {
-  // Improved envido response logic
+  // Mejora de la lógica de respuesta de envido
   let envidoPlayer1 = calculateEnvido(player1Hand);
   let envidoPlayer2 = calculateEnvido(player2Hand);
   if (envidoPlayer2 >= envidoPlayer1) {
@@ -420,12 +406,12 @@ function decideEnvidoResponse() {
   return random(['Quiero', 'No Quiero']);
 }
 
-// Handle the IA response for Truco
+// Función para manejar la respuesta de la IA al Truco
 function handleIaTruco() {
   let response = decideTrucoResponse();
   message = response;
   if (response === 'Quiero') {
-    gameState = 'selection'; // Continue with the game
+    gameState = 'selection'; // Continuar con el juego
   } else if (response === 'No Quiero') {
     pointsPlayer1 += 1;
     resetHands();
@@ -436,7 +422,7 @@ function handleIaTruco() {
 }
 
 function decideTrucoResponse() {
-  // Improved truco response logic
+  // Mejora de la lógica de respuesta de truco
   let strongCards = player2Hand.filter(card => cardHierarchy[`${card.suit}${card.value}`] >= 10).length;
   if (strongCards > 1) {
     return 'Quiero';
@@ -446,14 +432,14 @@ function decideTrucoResponse() {
   return 'No Quiero';
 }
 
-// Handle the IA response for Re Truco
+// Función para manejar la respuesta de la IA al Re Truco
 function handleIaReTruco() {
   let response = decideReTrucoResponse();
   message = response;
   if (response === 'Quiero') {
-    gameState = 'selection'; // Continue with the game
+    gameState = 'selection'; // Continuar con el juego
   } else if (response === 'No Quiero') {
-    pointsPlayer1 += 2; // If not wanted, 2 points are awarded to the player who sang Re Truco
+    pointsPlayer1 += 2; // Si no quiere, se otorgan 2 puntos al jugador que cantó Re Truco
     resetHands();
     gameState = 'selection';
   } else if (response === 'Vale Cuatro') {
@@ -462,7 +448,7 @@ function handleIaReTruco() {
 }
 
 function decideReTrucoResponse() {
-  // Improved re truco response logic
+  // Mejora de la lógica de respuesta de re truco
   let strongCards = player2Hand.filter(card => cardHierarchy[`${card.suit}${card.value}`] >= 10).length;
   if (strongCards === 3) {
     return 'Quiero';
@@ -472,30 +458,30 @@ function decideReTrucoResponse() {
   return 'No Quiero';
 }
 
-// Handle the IA response for Vale Cuatro
+// Función para manejar la respuesta de la IA al Vale Cuatro
 function handleIaValeCuatro() {
   let response = random(['Quiero', 'No Quiero']);
   message = response;
   if (response === 'Quiero') {
-    gameState = 'selection'; // Continue with the game
+    gameState = 'selection'; // Continuar con el juego
   } else {
-    pointsPlayer1 += 3; // If not wanted, 3 points are awarded to the player who sang Vale Cuatro
+    pointsPlayer1 += 3; // Si no quiere, se otorgan 3 puntos al jugador que cantó Vale Cuatro
     resetHands();
     gameState = 'selection';
   }
 }
 
-// Handle the player's response
+// Maneja la respuesta del jugador
 function handlePlayerResponse(response) {
   if (response === 'Quiero') {
     if (gameState === 'envidoResponse') {
       evaluateEnvido();
     } else if (gameState === 'trucoResponse') {
-      gameState = 'selection'; // Continue with the game
+      gameState = 'selection'; // Continuar con el juego
     } else if (gameState === 'reTrucoResponse') {
-      gameState = 'selection'; // Continue with the game
+      gameState = 'selection'; // Continuar con el juego
     } else if (gameState === 'valeCuatroResponse') {
-      gameState = 'selection'; // Continue with the game
+      gameState = 'selection'; // Continuar con el juego
     }
   } else if (response === 'No Quiero') {
     if (gameState === 'envidoResponse') {
@@ -506,7 +492,7 @@ function handlePlayerResponse(response) {
     } else if (gameState === 'reTrucoResponse') {
       pointsPlayer2 += 2;
     } else if (gameState === 'valeCuatroResponse') {
-      pointsPlayer2 += 3; // If not wanted, 3 points are awarded to the player who sang Vale Cuatro
+      pointsPlayer2 += 3; // Si no se quiere, se otorgan 3 puntos al jugador que cantó Vale Cuatro
     }
     resetHands();
     gameState = 'selection';
@@ -514,7 +500,7 @@ function handlePlayerResponse(response) {
   } else if (response === 'Re Truco') {
     gameState = 'reTrucoResponse';
   } else if (response === 'Vale Cuatro') {
-    gameState = 'selection'; // Continue with the game
+    gameState = 'selection'; // Continuar con el juego
   }
 }
 
@@ -526,7 +512,7 @@ function handleIrAlMazo() {
   }
   resetHands();
   gameState = 'selection';
-  message = `Speler ${currentPlayer} ging naar de stapel`;
+  message = `Jugador ${currentPlayer} fue al mazo`;
 }
 
 function resetHands() {
@@ -558,7 +544,7 @@ function evaluateEnvido() {
     } else {
       pointsPlayer1 += 2;
     }
-    message = `Speler 1 won de envido met ${envidoPlayer1} punten`;
+    message = `Jugador 1 ganó el envido con ${envidoPlayer1} puntos`;
   } else {
     if (envidoType === 'Real Envido') {
       pointsPlayer2 += 3;
@@ -567,7 +553,7 @@ function evaluateEnvido() {
     } else {
       pointsPlayer2 += 2;
     }
-    message = `Speler 2 won de envido met ${envidoPlayer2} punten`;
+    message = `Jugador 2 ganó el envido con ${envidoPlayer2} puntos`;
   }
   gameState = 'selection';
   envidoType = null; // Reset envido type
@@ -604,7 +590,7 @@ function chooseCardForIa() {
   return player2Hand[0];
 }
 
-// Evaluate the game winner and assign points correctly
+// Evalúa el ganador del juego y asigna los puntos correctamente
 function evaluateGameWinner() {
   if (roundsWonPlayer1 > roundsWonPlayer2) {
     if (!trucoPlayed) {
@@ -612,29 +598,29 @@ function evaluateGameWinner() {
     } else if (trucoPlayed && !reTrucoPlayed) {
       pointsPlayer1 += 2;
     } else if (reTrucoPlayed && !gameState.includes('valeCuatroResponse')) {
-      pointsPlayer1 += 3; // Assign 3 points if won with Re Truco
+      pointsPlayer1 += 3; // Asignar 3 puntos si se gana con Re Truco
     } else if (gameState.includes('valeCuatroResponse')) {
-      pointsPlayer1 += 4; // Assign 4 points if won with Vale Cuatro
+      pointsPlayer1 += 4; // Asignar 4 puntos si se gana con Vale Cuatro
     }
-    message = "Speler 1 won de truco";
+    message = "Jugador 1 ganó el truco";
   } else if (roundsWonPlayer2 > roundsWonPlayer1) {
     if (!trucoPlayed) {
       pointsPlayer2 += 1;
     } else if (trucoPlayed && !reTrucoPlayed) {
       pointsPlayer2 += 3;
     } else if (reTrucoPlayed && !gameState.includes('valeCuatroResponse')) {
-      pointsPlayer2 += 3; // Assign 3 points if won with Re Truco
+      pointsPlayer2 += 3; // Asignar 3 puntos si se gana con Re Truco
     } else if (gameState.includes('valeCuatroResponse')) {
-      pointsPlayer2 += 4; // Assign 4 points if won with Vale Cuatro
+      pointsPlayer2 += 4; // Asignar 4 puntos si se gana con Vale Cuatro
     }
-    message = "Speler 2 won de truco";
+    message = "Jugador 2 ganó el truco";
   } else {
-    message = "Gelijkspel in de rondes";
+    message = "Empate en las rondas";
   }
 
   if (playedCards.length === 6) {
     delayStarted = true;
-    delayEndTime = millis() + 1900; // 2 seconds delay
+    delayEndTime = millis() + 1900; // 2 segundos de retraso
   } else {
     resetHands();
   }

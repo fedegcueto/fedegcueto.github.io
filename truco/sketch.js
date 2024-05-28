@@ -12,7 +12,7 @@ let backImage;
 let message = "";
 let roundsWonPlayer1 = 0;
 let roundsWonPlayer2 = 0;
-let envidoPlayed = false;
+let envidoCalled = false;
 let envidoDeclined = false;
 let trucoPlayed = false;
 let reTrucoPlayed = false;
@@ -22,6 +22,7 @@ let cardMoveSpeed = 10;
 let messageAlpha = 0;
 let shuffleAnimation = false;
 let shuffleStartTime = 0;
+let envidoType = null; // Added to track the type of Envido call
 
 const cardHierarchy = {
   'espada1': 14, 'basto1': 13, 'espada7': 12, 'oro7': 11,
@@ -159,7 +160,7 @@ function drawCard(card, x, y, highlighted, hover) {
 
 function drawButtons() {
   if (gameState === 'selection') {
-    if (!envidoPlayed && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
+    if (!envidoCalled && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
       drawButton('Envido', 50, 600);
       drawButton('Real Envido', 150, 600);
       drawButton('Falta Envido', 250, 600);
@@ -235,6 +236,12 @@ function drawShuffleAnimation() {
   }
 }
 
+// Fix: Add touchStarted function for mobile devices
+function touchStarted() {
+  mousePressed();
+  return false; // prevent default
+}
+
 function mousePressed() {
   if (gameState === 'selection') {
     for (let i = 0; i < player1Hand.length; i++) {
@@ -249,18 +256,21 @@ function mousePressed() {
         return;
       }
     }
-    if (!envidoPlayed && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
+    if (!envidoCalled && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
       if (mouseX > 50 && mouseX < 130 && mouseY > 600 && mouseY < 640) {
         message = 'Envido';
         gameState = 'envidoResponse';
+        envidoType = 'Envido'; // Track the Envido type
         handleIaResponse('Envido');
       } else if (mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
         message = 'Real Envido';
         gameState = 'envidoResponse';
+        envidoType = 'Real Envido'; // Track the Envido type
         handleIaResponse('Real Envido');
       } else if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
         message = 'Falta Envido';
         gameState = 'envidoResponse';
+        envidoType = 'Falta Envido'; // Track the Envido type
         handleIaResponse('Falta Envido');
       }
     }
@@ -352,7 +362,7 @@ function evaluateRound() {
   }
 }
 
-// Maneja la respuesta de la IA para el Truco
+// Maneja la respuesta de la IA para el Truco y Envido
 function handleIaResponse(call) {
   if (call === 'Envido' || call === 'Real Envido' || call === 'Falta Envido') {
     let response = decideEnvidoResponse();
@@ -361,8 +371,9 @@ function handleIaResponse(call) {
       evaluateEnvido();
     } else if (response === 'No Quiero') {
       envidoDeclined = true;
-      pointsPlayer1 += (call === 'Real Envido' ? 2 : 1);
+      pointsPlayer1 += (call === 'Real Envido' ? 3 : (call === 'Falta Envido' ? (30 - pointsPlayer1) : 1));
       gameState = 'selection';
+      envidoCalled = true; // Mark envido as called
     }
   } else if (call === 'Truco') {
     handleIaTruco();
@@ -463,7 +474,7 @@ function handlePlayerResponse(response) {
   } else if (response === 'No Quiero') {
     if (gameState === 'envidoResponse') {
       envidoDeclined = true;
-      pointsPlayer2 += (message === 'Real Envido' ? 2 : 1);
+      pointsPlayer2 += (envidoType === 'Real Envido' ? 3 : (envidoType === 'Falta Envido' ? (30 - pointsPlayer2) : 1));
     } else if (gameState === 'trucoResponse') {
       pointsPlayer2 += 1;
     } else if (gameState === 'reTrucoResponse') {
@@ -473,6 +484,7 @@ function handlePlayerResponse(response) {
     }
     resetHands();
     gameState = 'selection';
+    envidoCalled = true; // Mark envido as called
   } else if (response === 'Re Truco') {
     gameState = 'reTrucoResponse';
   } else if (response === 'Vale Cuatro') {
@@ -500,7 +512,7 @@ function resetHands() {
   shuffleDeck();
   dealCards();
   selectedCard = null;
-  envidoPlayed = false;
+  envidoCalled = false; // Reset envido called status
   envidoDeclined = false;
   trucoPlayed = false;
   reTrucoPlayed = false;
@@ -509,22 +521,22 @@ function resetHands() {
 }
 
 function evaluateEnvido() {
-  envidoPlayed = true;
+  envidoCalled = true; // Mark envido as called
   let envidoPlayer1 = calculateEnvido(player1Hand);
   let envidoPlayer2 = calculateEnvido(player2Hand);
   if (envidoPlayer1 > envidoPlayer2) {
-    if (message === 'Real Envido') {
+    if (envidoType === 'Real Envido') {
       pointsPlayer1 += 3;
-    } else if (message === 'Falta Envido') {
+    } else if (envidoType === 'Falta Envido') {
       pointsPlayer1 += (30 - pointsPlayer1);
     } else {
       pointsPlayer1 += 2;
     }
     message = `Jugador 1 ganó el envido con ${envidoPlayer1} puntos`;
   } else {
-    if (message === 'Real Envido') {
+    if (envidoType === 'Real Envido') {
       pointsPlayer2 += 3;
-    } else if (message === 'Falta Envido') {
+    } else if (envidoType === 'Falta Envido') {
       pointsPlayer2 += (30 - pointsPlayer2);
     } else {
       pointsPlayer2 += 2;
@@ -532,6 +544,7 @@ function evaluateEnvido() {
     message = `Jugador 2 ganó el envido con ${envidoPlayer2} puntos`;
   }
   gameState = 'selection';
+  envidoType = null; // Reset envido type
 }
 
 function calculateEnvido(hand) {

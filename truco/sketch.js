@@ -212,11 +212,12 @@ function drawPoints() {
   text(`Puntos Jugador 2: ${pointsPlayer2}`, width * 0.05, height * 0.04);
 }
 
+
 function drawMessage() {
   fill(0, 0, 0, messageAlpha);
   textSize(width * 0.06);
   textAlign(CENTER, CENTER);
-  text(message, width / 2, height / 4);
+  text(message, width / 2, height / 3);
   if (messageAlpha < 255) {
     messageAlpha += 5;
   }

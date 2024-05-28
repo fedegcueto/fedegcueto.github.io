@@ -54,8 +54,7 @@ function preload() {
 }
 
 function setup() {
-  let canvas = createCanvas(630, 1200);
-  canvas.parent('game-container');
+  createCanvas(500, 970); // Removed the parent method
   initializeDeck();
   shuffleDeck();
   dealCards();
@@ -111,10 +110,10 @@ function dealCards() {
 }
 
 function drawHands() {
-  let handWidth = 80;
-  let handHeight = 120;
+  let handWidth = 90;
+  let handHeight = 200;
   let player1Y = height - handHeight - 20;
-  let player2Y = 20;
+  let player2Y = 50;
 
   for (let i = 0; i < player1Hand.length; i++) {
     let x = (width / 2) - (player1Hand.length / 2) * handWidth + i * handWidth;
@@ -146,7 +145,7 @@ function drawCard(card, x, y, highlighted, hover) {
   push();
   if (hover) {
     translate(x + 40, y + 60);
-    scale(1.1);
+    scale(1.6);
     translate(-40, -60);
   } else {
     translate(x, y);

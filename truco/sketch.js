@@ -18,6 +18,10 @@ let trucoPlayed = false;
 let reTrucoPlayed = false;
 let delayStarted = false;
 let delayEndTime = 0;
+let cardMoveSpeed = 10;
+let messageAlpha = 0;
+let shuffleAnimation = false;
+let shuffleStartTime = 0;
 
 const cardHierarchy = {
   'espada1': 14, 'basto1': 13, 'espada7': 12, 'oro7': 11,
@@ -64,7 +68,16 @@ function draw() {
   
   if (delayStarted && millis() >= delayEndTime) {
     delayStarted = false;
-    resetHands();
+    shuffleAnimation = true;
+    shuffleStartTime = millis();
+  }
+  
+  if (shuffleAnimation) {
+    drawShuffleAnimation();
+    if (millis() - shuffleStartTime > 2000) {
+      shuffleAnimation = false;
+      resetHands();
+    }
   }
 }
 
@@ -96,22 +109,39 @@ function dealCards() {
 
 function drawHands() {
   for (let i = 0; i < player1Hand.length; i++) {
-    drawCard(player1Hand[i], 50 + i * 100, 700, i === selectedCard);
+    let x = 50 + i * 100;
+    let y = 700;
+    let hover = mouseX > x && mouseX < x + 80 && mouseY > y && mouseY < y + 120;
+    drawCard(player1Hand[i], x, y, i === selectedCard, hover);
   }
   for (let i = 0; i < player2Hand.length; i++) {
-    drawCard({ suit: 'back', value: 0 }, 50 + i * 100, 50, false);
+    drawCard({ suit: 'back', value: 0 }, 50 + i * 100, 50, false, false);
   }
 }
 
 function drawPlayedCards() {
   for (let i = 0; i < playedCards.length; i++) {
-    let x = playedCards[i].player === 1 ? width / 2 - 100 : width / 2 + 20;
-    let y = height / 2 - 60;
-    drawCard(playedCards[i].card, x, y, false);
+    let card = playedCards[i];
+    if (card.moving) {
+      card.x += (card.targetX - card.x) / cardMoveSpeed;
+      card.y += (card.targetY - card.y) / cardMoveSpeed;
+      if (dist(card.x, card.y, card.targetX, card.targetY) < 1) {
+        card.moving = false;
+      }
+    }
+    drawCard(card.card, card.x, card.y, false, false);
   }
 }
 
-function drawCard(card, x, y, highlighted) {
+function drawCard(card, x, y, highlighted, hover) {
+  push();
+  if (hover) {
+    translate(x + 40, y + 60);
+    scale(1.1);
+    translate(-40, -60);
+  } else {
+    translate(x, y);
+  }
   if (highlighted) {
     stroke(255, 0, 0);
     strokeWeight(3);
@@ -120,10 +150,11 @@ function drawCard(card, x, y, highlighted) {
   }
   if (card.suit !== 'back') {
     let cardName = `${card.suit}${card.value}`;
-    image(cardImages[cardName], x, y, 80, 120);
+    image(cardImages[cardName], 0, 0, 80, 120);
   } else {
-    image(backImage, x, y, 80, 120);
+    image(backImage, 0, 0, 80, 120);
   }
+  pop();
 }
 
 function drawButtons() {
@@ -159,7 +190,11 @@ function drawButtons() {
 }
 
 function drawButton(label, x, y) {
-  fill(0, 0, 255);
+  if (mouseX > x && mouseX < x + 80 && mouseY > y && mouseY < y + 40) {
+    fill(0, 0, 150);
+  } else {
+    fill(0, 0, 255);
+  }
   rect(x, y, 80, 40);
   fill(255);
   textSize(16);
@@ -176,16 +211,36 @@ function drawPoints() {
 }
 
 function drawMessage() {
-  fill(0);
+  fill(0, 0, 0, messageAlpha);
   textSize(24);
   textAlign(CENTER, CENTER);
   text(message, width / 2, height / 4 + 50);
+  if (messageAlpha < 255) {
+    messageAlpha += 5;
+  }
 }
 
-function handleClickOrTouch(x, y) {
+function drawShuffleAnimation() {
+  fill(255, 255, 255, 150);
+  rect(0, 0, width, height);
+  textSize(32);
+  fill(0);
+  textAlign(CENTER, CENTER);
+  text("Barajando...", width / 2, height / 2);
+  for (let i = 0; i < 10; i++) {
+    let x = random(width);
+    let y = random(height);
+    let cardName = `${deck[i % deck.length].suit}${deck[i % deck.length].value}`;
+    image(cardImages[cardName], x, y, 40, 60);
+  }
+}
+
+function mousePressed() {
   if (gameState === 'selection') {
     for (let i = 0; i < player1Hand.length; i++) {
-      if (x > 50 + i * 100 && x < 130 + i * 100 && y > 700 && y < 820) {
+      let x = 50 + i * 100;
+      let y = 700;
+      if (mouseX > x && mouseX < x + 80 && mouseY > y && mouseY < y + 120) {
         selectedCard = i;
         playCard(player1Hand[i], 1);
         player1Hand.splice(i, 1);
@@ -195,79 +250,80 @@ function handleClickOrTouch(x, y) {
       }
     }
     if (!envidoPlayed && !envidoDeclined && roundsWonPlayer1 === 0 && roundsWonPlayer2 === 0) {
-      if (x > 50 && x < 130 && y > 600 && y < 640) {
+      if (mouseX > 50 && mouseX < 130 && mouseY > 600 && mouseY < 640) {
         message = 'Envido';
         gameState = 'envidoResponse';
         handleIaResponse('Envido');
-      } else if (x > 150 && x < 230 && y > 600 && y < 640) {
+      } else if (mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
         message = 'Real Envido';
         gameState = 'envidoResponse';
         handleIaResponse('Real Envido');
-      } else if (x > 250 && x < 330 && y > 600 && y < 640) {
+      } else if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
         message = 'Falta Envido';
         gameState = 'envidoResponse';
         handleIaResponse('Falta Envido');
       }
     }
-    if (!trucoPlayed && x > 50 && x < 130 && y > 650 && y < 690) {
+    if (!trucoPlayed && mouseX > 50 && mouseX < 130 && mouseY > 650 && mouseY < 690) {
       message = 'Truco';
       trucoPlayed = true;
       gameState = 'trucoResponse';
       handleIaResponse('Truco');
-    } else if (trucoPlayed && !reTrucoPlayed && x > 150 && x < 230 && y > 650 && y < 690) {
+    } else if (trucoPlayed && !reTrucoPlayed && mouseX > 150 && mouseX < 230 && mouseY > 650 && mouseY < 690) {
       message = 'Re Truco';
       reTrucoPlayed = true;
       gameState = 'reTrucoResponse';
       handleIaResponse('Re Truco');
-    } else if (reTrucoPlayed && x > 250 && x < 330 && y > 650 && y < 690) {
+    } else if (reTrucoPlayed && mouseX > 250 && mouseX < 330 && mouseY > 650 && mouseY < 690) {
       message = 'Vale Cuatro';
       gameState = 'valeCuatroResponse';
       handleIaResponse('Vale Cuatro');
-    } else if (x > 350 && x < 430 && y > 650 && y < 690) {
+    } else if (mouseX > 350 && mouseX < 430 && mouseY > 650 && mouseY < 690) {
       message = 'Ir al Mazo';
       handleIrAlMazo();
     }
   } else if (gameState === 'envidoResponse') {
-    if (x > 250 && x < 330 && y > 600 && y < 640) {
+    if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
       handlePlayerResponse('Quiero');
-    } else if (x > 350 && x < 430 && y > 600 && y < 640) {
+    } else if (mouseX > 350 && mouseX < 430 && mouseY > 600 && mouseY < 640) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'trucoResponse') {
-    if (x > 50 && x < 130 && y > 600 && y < 640) {
+    if (mouseX > 50 && mouseX < 130 && mouseY > 600 && mouseY < 640) {
       handlePlayerResponse('Quiero');
-    } else if (x > 150 && x < 230 && y > 600 && y < 640) {
+    } else if (mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
       handlePlayerResponse('Re Truco');
-    } else if (x > 250 && x < 330 && y > 600 && y < 640) {
+    } else if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'reTrucoResponse') {
-    if (x > 50 && x < 130 && y > 600 && y < 640) {
+    if (mouseX > 50 && mouseX < 130 && mouseY > 600 && mouseY < 640) {
       handlePlayerResponse('Quiero');
-    } else if (x > 150 && x < 230 && y > 600 && y < 640) {
+    } else if (mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
       handlePlayerResponse('Vale Cuatro');
-    } else if (x > 250 && x < 330 && y > 600 && y < 640) {
+    } else if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
       handlePlayerResponse('No Quiero');
     }
   } else if (gameState === 'valeCuatroResponse') {
-    if (x > 150 && x < 230 && y > 600 && y < 640) {
+    if (mouseX > 150 && mouseX < 230 && mouseY > 600 && mouseY < 640) {
       handlePlayerResponse('Quiero');
-    } else if (x > 250 && x < 330 && y > 600 && y < 640) {
+    } else if (mouseX > 250 && mouseX < 330 && mouseY > 600 && mouseY < 640) {
       handlePlayerResponse('No Quiero');
     }
   }
 }
 
-function mousePressed() {
-  handleClickOrTouch(mouseX, mouseY);
-}
-
-function touchStarted() {
-  handleClickOrTouch(touchX, touchY);
-}
-
 function playCard(card, player) {
-  playedCards.push({ card, player });
+  let cardMove = {
+    card: card,
+    player: player,
+    x: player === 1 ? 50 + selectedCard * 100 : 50 + player2Hand.indexOf(card) * 100,
+    y: player === 1 ? 700 : 50,
+    targetX: player === 1 ? width / 2 - 100 : width / 2 + 20,
+    targetY: height / 2 - 60,
+    moving: true
+  };
+  playedCards.push(cardMove);
   if (playedCards.length % 2 === 0) {
     evaluateRound();
   }

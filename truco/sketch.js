@@ -53,7 +53,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(840, 1310);
+  createCanvas(515, windowHeight);
   initializeDeck();
   shuffleDeck();
   dealCards();

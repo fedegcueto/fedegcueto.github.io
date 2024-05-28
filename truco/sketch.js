@@ -54,7 +54,7 @@ function preload() {
 }
 
 function setup() {
-  let canvas = createCanvas(430, 900);
+  let canvas = createCanvas(630, 1200);
   canvas.parent('game-container');
   initializeDeck();
   shuffleDeck();

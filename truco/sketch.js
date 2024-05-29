@@ -617,6 +617,4 @@ function evaluateGameWinner() {
   }
 }
 
-function windowResized() {
-  resizeCanvas(windowHeight * 0.75, windowHeight);
-}
+

@@ -23,7 +23,6 @@ let messageAlpha = 0;
 let shuffleAnimation = false;
 let shuffleStartTime = 0;
 let envidoType = null; // Added to track the type of Envido call
-
 const cardHierarchy = {
   'espada1': 14, 'basto1': 13, 'espada7': 12, 'oro7': 11,
   'espada3': 10, 'basto3': 10, 'oro3': 10, 'copa3': 10,
@@ -37,7 +36,6 @@ const cardHierarchy = {
   'espada5': 2, 'basto5': 2, 'oro5': 2, 'copa5': 2,
   'espada4': 1, 'basto4': 1, 'oro4': 1, 'copa4': 1
 };
-
 function preload() {
   let suits = ['oro', 'basto', 'espada', 'copa'];
   let values = [1, 2, 3, 4, 5, 6, 7, 10, 11, 12];
@@ -53,12 +51,11 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(windowHeight * 0.50, windowHeight);
+ createCanvas(windowWidth, windowHeight);
   initializeDeck();
   shuffleDeck();
   dealCards();
 }
-
 function draw() {
   background(backgr);
   drawHands();
@@ -81,7 +78,6 @@ function draw() {
     }
   }
 }
-
 function initializeDeck() {
   let suits = ['oro', 'basto', 'espada', 'copa'];
   let values = [1, 2, 3, 4, 5, 6, 7, 10, 11, 12];
@@ -91,14 +87,12 @@ function initializeDeck() {
     }
   }
 }
-
 function shuffleDeck() {
   for (let i = deck.length - 1; i > 0; i--) {
     let j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
   }
 }
-
 function dealCards() {
   player1Hand = [];
   player2Hand = [];
@@ -107,23 +101,17 @@ function dealCards() {
     player2Hand.push(deck.pop());
   }
 }
-
 function drawHands() {
-  let cardWidth = width * 0.25;
-  let cardHeight = height * 0.15;
   for (let i = 0; i < player1Hand.length; i++) {
-    let x = width * 0.1 + i * cardWidth;
+    let x = width * 0.1 + i * (width * 0.25);
     let y = height * 0.8;
-    let hover = mouseX > x && mouseX < x + cardWidth && mouseY > y && mouseY < y + cardHeight;
-    drawCard(player1Hand[i], x, y, i === selectedCard, hover, cardWidth, cardHeight);
+    let hover = mouseX > x && mouseX < x + (width * 0.2) && mouseY > y && mouseY < y + (height * 0.15);
+    drawCard(player1Hand[i], x, y, i === selectedCard, hover);
   }
   for (let i = 0; i < player2Hand.length; i++) {
-    let x = width * 0.1 + i * cardWidth;
-    let y = height * 0.1;
-    drawCard({ suit: 'back', value: 0 }, x, y, false, false, cardWidth, cardHeight);
+    drawCard({ suit: 'back', value: 0 }, width * 0.1 + i * (width * 0.25), height * 0.1, false, false);
   }
 }
-
 function drawPlayedCards() {
   for (let i = 0; i < playedCards.length; i++) {
     let card = playedCards[i];
@@ -134,18 +122,15 @@ function drawPlayedCards() {
         card.moving = false;
       }
     }
-    let cardWidth = width * 0.2;
-    let cardHeight = height * 0.15;
-    drawCard(card.card, card.x, card.y, false, false, cardWidth, cardHeight);
+    drawCard(card.card, card.x, card.y, false, false);
   }
 }
-
-function drawCard(card, x, y, highlighted, hover, cardWidth, cardHeight) {
+function drawCard(card, x, y, highlighted, hover) {
   push();
   if (hover) {
-    translate(x + cardWidth / 2, y + cardHeight / 2);
+    translate(x + (width * 0.1), y + (height * 0.075));
     scale(1.1);
-    translate(-cardWidth / 2, -cardHeight / 2);
+    translate(-(width * 0.1), -(height * 0.075));
   } else {
     translate(x, y);
   }
@@ -157,13 +142,12 @@ function drawCard(card, x, y, highlighted, hover, cardWidth, cardHeight) {
   }
   if (card.suit !== 'back') {
     let cardName = `${card.suit}${card.value}`;
-    image(cardImages[cardName], 0, 0, cardWidth, cardHeight);
+    image(cardImages[cardName], 0, 0, width * 0.2, height * 0.15);
   } else {
-    image(backImage, 0, 0, cardWidth, cardHeight);
+    image(backImage, 0, 0, width * 0.2, height * 0.15);
   }
   pop();
 }
-
 function drawButtons() {
   textSize(width * 0.05); // Adjust text size based on width
   if (gameState === 'selection') {
@@ -196,22 +180,18 @@ function drawButtons() {
     drawButton('No Quiero', width * 0.55, height * 0.65);
   }
 }
-
 function drawButton(label, x, y) {
-  let buttonWidth = width * 0.2;
-  let buttonHeight = height * 0.07;
-  if (mouseX > x && mouseX < x + buttonWidth && mouseY > y && mouseY < y + buttonHeight) {
+  if (mouseX > x && mouseX < x + (width * 0.2) && mouseY > y && mouseY < y + (height * 0.07)) {
     fill(0, 0, 150);
   } else {
     fill(0, 0, 255);
   }
-  rect(x, y, buttonWidth, buttonHeight);
+  rect(x, y, width * 0.2, height * 0.07);
   fill(255);
   textSize(width * 0.04);
   textAlign(CENTER, CENTER);
-  text(label, x + buttonWidth / 2, y + buttonHeight / 2);
+  text(label, x + (width * 0.1), y + (height * 0.035));
 }
-
 function drawPoints() {
   fill(255);
   textSize(width * 0.04);
@@ -219,7 +199,6 @@ function drawPoints() {
   text(`Puntos Jugador 1: ${pointsPlayer1}`, width * 0.05, height * 0.01);
   text(`Puntos Jugador 2: ${pointsPlayer2}`, width * 0.05, height * 0.04);
 }
-
 function drawMessage() {
   fill(0, 0, 0, messageAlpha);
   textSize(width * 0.06);
@@ -229,7 +208,6 @@ function drawMessage() {
     messageAlpha += 5;
   }
 }
-
 function drawShuffleAnimation() {
   fill(255, 255, 255, 150);
   rect(0, 0, width, height);
@@ -241,25 +219,19 @@ function drawShuffleAnimation() {
     let x = random(width);
     let y = random(height);
     let cardName = `${deck[i % deck.length].suit}${deck[i % deck.length].value}`;
-    let cardWidth = width * 0.1;
-    let cardHeight = height * 0.15;
-    image(cardImages[cardName], x, y, cardWidth, cardHeight);
+    image(cardImages[cardName], x, y, width * 0.1, height * 0.15);
   }
 }
-
 function touchStarted() {
   mousePressed();
   return false; // prevent default
 }
-
 function mousePressed() {
-  let cardWidth = width * 0.25;
-  let cardHeight = height * 0.15;
   if (gameState === 'selection') {
     for (let i = 0; i < player1Hand.length; i++) {
-      let x = width * 0.1 + i * cardWidth;
+      let x = width * 0.1 + i * (width * 0.25);
       let y = height * 0.8;
-      if (mouseX > x && mouseX < x + cardWidth && mouseY > y && mouseY < y + cardHeight) {
+      if (mouseX > x && mouseX < x + (width * 0.2) && mouseY > y && mouseY < y + (height * 0.15)) {
         selectedCard = i;
         playCard(player1Hand[i], 1);
         player1Hand.splice(i, 1);
@@ -334,7 +306,6 @@ function mousePressed() {
     }
   }
 }
-
 function playCard(card, player) {
   let cardMove = {
     card: card,
@@ -350,7 +321,6 @@ function playCard(card, player) {
     evaluateRound();
   }
 }
-
 function evaluateRound() {
   let card1 = playedCards[playedCards.length - 2].card;
   let card2 = playedCards[playedCards.length - 1].card;
@@ -368,12 +338,10 @@ function evaluateRound() {
     if (currentPlayer === 1) roundsWonPlayer1++;
     else roundsWonPlayer2++;
   }
-
   if (playedCards.length === 6) {
     evaluateGameWinner();
   }
 }
-
 function handleIaResponse(call) {
   if (call === 'Envido' || call === 'Real Envido' || call === 'Falta Envido') {
     let response = decideEnvidoResponse();
@@ -394,7 +362,6 @@ function handleIaResponse(call) {
     handleIaValeCuatro();
   }
 }
-
 function decideEnvidoResponse() {
   let envidoPlayer1 = calculateEnvido(player1Hand);
   let envidoPlayer2 = calculateEnvido(player2Hand);
@@ -403,7 +370,6 @@ function decideEnvidoResponse() {
   }
   return random(['Quiero', 'No Quiero']);
 }
-
 function handleIaTruco() {
   let response = decideTrucoResponse();
   message = response;
@@ -417,7 +383,6 @@ function handleIaTruco() {
     gameState = 'reTrucoResponse';
   }
 }
-
 function decideTrucoResponse() {
   let strongCards = player2Hand.filter(card => cardHierarchy[`${card.suit}${card.value}`] >= 10).length;
   if (strongCards > 1) {
@@ -427,7 +392,6 @@ function decideTrucoResponse() {
   }
   return 'No Quiero';
 }
-
 function handleIaReTruco() {
   let response = decideReTrucoResponse();
   message = response;
@@ -441,7 +405,6 @@ function handleIaReTruco() {
     gameState = 'valeCuatroResponse';
   }
 }
-
 function decideReTrucoResponse() {
   let strongCards = player2Hand.filter(card => cardHierarchy[`${card.suit}${card.value}`] >= 10).length;
   if (strongCards === 3) {
@@ -451,7 +414,6 @@ function decideReTrucoResponse() {
   }
   return 'No Quiero';
 }
-
 function handleIaValeCuatro() {
   let response = random(['Quiero', 'No Quiero']);
   message = response;
@@ -463,7 +425,6 @@ function handleIaValeCuatro() {
     gameState = 'selection';
   }
 }
-
 function handlePlayerResponse(response) {
   if (response === 'Quiero') {
     if (gameState === 'envidoResponse') {
@@ -495,7 +456,6 @@ function handlePlayerResponse(response) {
     gameState = 'valeCuatroResponse'; // Vale Cuatro must be accepted or rejected
   }
 }
-
 function handleIrAlMazo() {
   if (currentPlayer === 1) {
     pointsPlayer2 += 1;
@@ -506,7 +466,6 @@ function handleIrAlMazo() {
   gameState = 'selection';
   message = `Jugador ${currentPlayer} fue al mazo`;
 }
-
 function resetHands() {
   deck = [];
   player1Hand = [];
@@ -523,7 +482,6 @@ function resetHands() {
   roundsWonPlayer1 = 0;
   roundsWonPlayer2 = 0;
 }
-
 function evaluateEnvido() {
   envidoCalled = true; // Mark envido as called
   let envidoPlayer1 = calculateEnvido(player1Hand);
@@ -550,7 +508,6 @@ function evaluateEnvido() {
   gameState = 'selection';
   envidoType = null; // Reset envido type
 }
-
 function calculateEnvido(hand) {
   let envidoPoints = 0;
   let suits = { 'oro': [], 'basto': [], 'espada': [], 'copa': [] };
@@ -568,7 +525,6 @@ function calculateEnvido(hand) {
   }
   return envidoPoints;
 }
-
 function handleIaTurn() {
   if (gameState === 'selection') {
     let cardToPlay = chooseCardForIa();
@@ -577,11 +533,9 @@ function handleIaTurn() {
     currentPlayer = 1;
   }
 }
-
 function chooseCardForIa() {
   return player2Hand[0];
 }
-
 function evaluateGameWinner() {
   if (roundsWonPlayer1 > roundsWonPlayer2) {
     if (!trucoPlayed) {
@@ -608,15 +562,10 @@ function evaluateGameWinner() {
   } else {
     message = "Empate en las rondas";
   }
-
   if (playedCards.length === 6) {
     delayStarted = true;
     delayEndTime = millis() + 1900; // 2 segundos de retraso
   } else {
     resetHands();
   }
-}
-
-function windowResized() {
-  resizeCanvas(windowHeight * 0.75, windowHeight);
 }

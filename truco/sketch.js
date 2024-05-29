@@ -53,7 +53,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(515, windowHeight);
+  createCanvas(450, windowHeight);
   initializeDeck();
   shuffleDeck();
   dealCards();
@@ -211,7 +211,6 @@ function drawPoints() {
   text(`Puntos Jugador 1: ${pointsPlayer1}`, width * 0.05, height * 0.01);
   text(`Puntos Jugador 2: ${pointsPlayer2}`, width * 0.05, height * 0.04);
 }
-
 
 function drawMessage() {
   fill(0, 0, 0, messageAlpha);
@@ -603,4 +602,8 @@ function evaluateGameWinner() {
   } else {
     resetHands();
   }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }

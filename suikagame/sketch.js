@@ -1,4 +1,3 @@
-// Matter.js module aliases
 let Engine = Matter.Engine,
     Render = Matter.Render,
     World = Matter.World,
@@ -6,7 +5,6 @@ let Engine = Matter.Engine,
     Body = Matter.Body,
     Composite = Matter.Composite,
     Events = Matter.Events;
-
 // Declare variables
 let engine, world;
 let fruits = [];
@@ -16,12 +14,10 @@ let score = 0;
 let highScore = 0;
 let currentFruit = null; // Track the current fruit at the top
 let isCreatingNewFruit = false; // Flag to control fruit creation delay
-let gameOverFlag = false; // Flag to track if game over
 
 // Preload fruit images and sounds
 let fruitImages = {};
 let dropSound, mergeSound, gameOverSound;
-let backgroundImage; // Declare background image variable
 
 function preload() {
     fruitImages['cherry'] = loadImage('images/cherry.png');
@@ -37,46 +33,34 @@ function preload() {
     fruitImages['watermelon'] = loadImage('images/watermelon.png');
 
     // Load sounds
-    soundFormats('wav');
     dropSound = loadSound('sounds/drop.wav');
     mergeSound = loadSound('sounds/merge.wav');
     gameOverSound = loadSound('sounds/gameover.wav');
-
-    // Load background image
-    backgroundImage = loadImage('images/fondo2.png'); // Replace with the correct path to your image
 }
 
 function setup() {
     createCanvas(925, 1643);
     engine = Engine.create();
     world = engine.world;
-
     // Create container
     container = new Container(455, 870, 320, 100); // Narrower container
-
     // Create boundaries
     boundaries.push(new Boundary(width / 2, height, width, 50));  // Bottom boundary
     boundaries.push(new Boundary(0, height / 2, 50, height));     // Left boundary
     boundaries.push(new Boundary(width, height / 2, 50, height)); // Right boundary
 
     // Adjust gravity
-    engine.world.gravity.y = 1; // Adjusted gravity for slower falling
+    engine.world.gravity.y = 0.7; // Adjusted gravity for slower falling
 
     // Run the engine
     Engine.run(engine);
-
     // Add collision event
     Events.on(engine, 'collisionStart', handleCollision);
-
     // Initialize the first fruit
     currentFruit = new Fruit(mouseX, 50, getRandomFruitType(), true);
 }
-
 function draw() {
     background(255);
-
-    // Draw the background image
-    image(backgroundImage, 0, 0, width, height);
 
     // Update and display container
     container.show();
@@ -85,7 +69,6 @@ function draw() {
     for (let boundary of boundaries) {
         boundary.show();
     }
-
     // Update and display fruits
     for (let i = fruits.length - 1; i >= 0; i--) {
         if (fruits[i].body) {
@@ -94,41 +77,28 @@ function draw() {
             fruits.splice(i, 1); // Remove fruit with null body from the array
         }
     }
-
     // Update and display the current fruit at the top
     if (currentFruit) {
         currentFruit.setPosition(mouseX, 50);
         currentFruit.show();
     }
-
     // Display score
     textSize(32);
     fill(0);
     text('Puntos: ' + score, 450, 845);
     text('Nº1: ' + highScore, 450, 885);
-
     // Draw the Game Over limit line
     push();
     stroke(205, 0, 0);
     strokeWeight(2);
     line(0, 100, width, 100); // Draw line at y = 100
     pop();
-    
     // Check for game over
     if (isGameOver()) {
         textSize(64);
         fill(255, 0, 0);
         textAlign(CENTER, CENTER);
         text('Game Over', width / 2, height / 2);
-        if (!gameOverFlag) {
-            gameOverFlag = true;
-            playSound(gameOverSound);
-            setTimeout(() => {
-                resetGame();
-                loop();
-                gameOverFlag = false;
-            }, 5000); // 5 seconds delay before resetting the game
-        }
         noLoop();  // Stop the draw loop
     }
 
@@ -140,7 +110,11 @@ function draw() {
 }
 
 function mousePressed() {
-    if (!gameOverFlag) {
+    if (isGameOver()) {
+        resetGame();
+        loop();
+        playSound(gameOverSound);
+    } else {
         if (currentFruit) {
             currentFruit.release();
             fruits.push(currentFruit);
@@ -151,17 +125,15 @@ function mousePressed() {
                 setTimeout(() => {
                     currentFruit = new Fruit(mouseX, 50, getRandomFruitType(), true);
                     isCreatingNewFruit = false;
-                }, 900); // 0.9 second delay
+                }, 300); // 1 second delay
             }
         }
     }
 }
-
 function getRandomFruitType() {
     const types = ['cherry', 'strawberry', 'grape', 'dekopon', 'persimmon', 'apple', 'pear', 'peach', 'pineapple', 'melon', 'watermelon'];
     return types[Math.floor(Math.random() * types.length)];
 }
-
 // Container class
 class Container {
     constructor(x, y, w, h) {
@@ -170,7 +142,6 @@ class Container {
         this.h = h;
         World.add(world, this.body);
     }
-
     show() {
         fill(128);
         stroke(0);
@@ -178,19 +149,14 @@ class Container {
         rect(this.body.position.x, this.body.position.y, this.w, this.h);
     }
 }
-
 // Boundary class
 class Boundary {
     constructor(x, y, w, h) {
-        this.body = Bodies.rectangle(x, y, w, h, {
-            isStatic: true,
-            restitution: 0.0 // No bounce for boundaries
-        });
+        this.body = Bodies.rectangle(x, y, w, h, { isStatic: true });
         this.w = w;
         this.h = h;
         World.add(world, this.body);
     }
-
     show() {
         fill(128);
         stroke(0);
@@ -198,7 +164,6 @@ class Boundary {
         rect(this.body.position.x, this.body.position.y, this.w, this.h);
     }
 }
-
 // Fruit class
 class Fruit {
     constructor(x, y, type, isStatic) {
@@ -208,15 +173,11 @@ class Fruit {
         this.isStatic = isStatic || false;
         this.body = Bodies.circle(x, y, this.size / 2, {
             isStatic: this.isStatic,
-            restitution: 0.8, // Increased bounciness for fruits
-            friction: 0.99,
-            collisionFilter: {
-                group: 1 // Custom collision group for fruits
-            }
+            restitution: 0.5, // Bounciness
+            friction: 0.5
         });
         World.add(world, this.body);
     }
-
     getSizeByType(type) {
         const sizes = {
             'cherry': 40,
@@ -235,8 +196,6 @@ class Fruit {
     }
 
     setPosition(x, y) {
-        // Ensure x doesn't go out of bounds on the left and right
-        x = constrain(x, this.size / 2 + 28, width - this.size / 2 - 28);
         Body.setPosition(this.body, { x: x, y: y });
     }
 
@@ -244,7 +203,6 @@ class Fruit {
         Body.setStatic(this.body, false);
         this.isStatic = false;
     }
-
     show() {
         if (this.body) {  // Check if body is not null
             let pos = this.body.position;
@@ -258,15 +216,14 @@ class Fruit {
         }
     }
 }
+
 function handleCollision(event) {
     let pairs = event.pairs;
     for (let i = 0; i < pairs.length; i++) {
         let bodyA = pairs[i].bodyA;
         let bodyB = pairs[i].bodyB;
-
         let fruitA = getFruitByBody(bodyA);
         let fruitB = getFruitByBody(bodyB);
-
         if (fruitA && fruitB && fruitA.type === fruitB.type) {
             let nextType = getNextFruitType(fruitA.type);
             if (nextType) {
@@ -296,14 +253,12 @@ function handleCollision(event) {
         }
     }
 }
-
 function removeFruit(fruit) {
     const index = fruits.indexOf(fruit);
     if (index !== -1) {
         fruits.splice(index, 1);
     }
 }
-
 function removeFruitFromWorld(fruit) {
     if (fruit.body) {
         World.remove(world, fruit.body);
@@ -311,11 +266,9 @@ function removeFruitFromWorld(fruit) {
     }
     removeFruit(fruit);
 }
-
 function getFruitByBody(body) {
     return fruits.find(fruit => fruit.body === body);
 }
-
 function getNextFruitType(type) {
     const hierarchy = ['cherry', 'strawberry', 'grape', 'dekopon', 'persimmon', 'apple', 'pear', 'peach', 'pineapple', 'melon', 'watermelon'];
     let index = hierarchy.indexOf(type);
@@ -324,7 +277,6 @@ function getNextFruitType(type) {
     }
     return null;
 }
-
 function isGameOver() {
     for (let i = 0; i < fruits.length; i++) {
         let fruit = fruits[i];
@@ -337,7 +289,6 @@ function isGameOver() {
     }
     return false;
 }
-
 function resetGame() {
     // Remove all fruits from the world and reset score
     for (let i = fruits.length - 1; i >= 0; i--) {
@@ -348,7 +299,6 @@ function resetGame() {
     }
     fruits = [];
     score = 0;
-    currentFruit = new Fruit(mouseX, 50, getRandomFruitType(), true); // Add new fruit at reset
 }
 
 function playSound(sound) {

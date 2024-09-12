@@ -811,30 +811,9 @@ function windowResized() {
 function actualizarEscalaYOrientacion() {
   if (windowWidth < windowHeight) {
     orientacion = 'portrait';
-    escala = windowWidth / 800;
+    escala = windowWidth / 400;
   } else {
     orientacion = 'landscape';
-    escala = windowHeight / 600;
+    escala = windowHeight / 400;
   }
-}
-
-export default function BreakoutGame() {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const sketch = new p5(p => {
-      p.setup = setup;
-      p.draw = draw;
-      p.preload = preload;
-      p.touchStarted = touchStarted;
-      p.touchMoved = touchMoved;
-      p.windowResized = windowResized;
-    }, canvasRef.current);
-
-    return () => {
-      sketch.remove();
-    };
-  }, []);
-
-  return <div ref={canvasRef}></div>;
 }

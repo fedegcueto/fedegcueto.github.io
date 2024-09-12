@@ -267,7 +267,7 @@ function actualizarJuego() {
   let paletaX = constrain(touches.length > 0 ? touches[0].x : mouseX, paleta.ancho/2, width - paleta.ancho/2);
   Matter.Body.setPosition(paleta.cuerpo, { 
     x: paletaX, 
-    y: height - height * 0.05 
+    y: height - height * 0.15 // Subimos la paleta
   });
   
   for (let i = pelotas.length - 1; i >= 0; i--) {
@@ -351,8 +351,7 @@ class Pelota {
       push();
       translate(this.estela[i].x - width/2, this.estela[i].y - height/2, 0);
       fill(255, 255, 255, 255 * (1 - i / this.estela.length));
-      sphere(width * 0.01 * escala * (1 - i / this.estela.length));
-      pop();
+      sphere(width * 0.015 * escala * (1 - i / this.estela.length)); // Aumentamos el tamaño de la estela
     }
 
     push();
@@ -362,7 +361,7 @@ class Pelota {
       tint(255, 128);
     }
     texture(texturaPelota);
-    sphere(width * 0.01 * escala);
+    sphere(width * 0.015 * escala); // Aumentamos el tamaño de la pelota
     pop();
   }
 }
@@ -371,6 +370,7 @@ class Paleta {
   constructor(cuerpo, ancho) {
     this.cuerpo = cuerpo;
     this.ancho = ancho;
+    this.alto = height * 0.02 * escala;
     this.escalaY = 1;
     this.esPegajosa = false;
   }
@@ -389,7 +389,7 @@ class Paleta {
     if (this.esPegajosa) {
       tint(255, 255, 0);
     }
-    box(this.ancho, height * 0.02 * escala, width * 0.02 * escala);
+    box(this.ancho, this.alto, width * 0.02 * escala);
     pop();
   }
 
@@ -417,7 +417,7 @@ class Bloque {
 }
 
 function crearPelota() {
-  let pelotaCuerpo = Matter.Bodies.circle(width / 2, height - height * 0.1, width * 0.01 * escala, {
+  let pelotaCuerpo = Matter.Bodies.circle(width / 2, height - height * 0.2, width * 0.015 * escala, {
     restitution: 1,
     friction: 0,
     frictionAir: 0,
@@ -430,8 +430,8 @@ function crearPelota() {
 }
 
 function crearPaleta() {
-  let anchoInicial = width * 0.15;
-  let paletaCuerpo = Matter.Bodies.rectangle(width / 2, height - height * 0.05, anchoInicial, height * 0.02 * escala, {
+  let anchoInicial = width * 0.2; // Aumentamos el ancho de la paleta
+  let paletaCuerpo = Matter.Bodies.rectangle(width / 2, height - height * 0.15, anchoInicial, height * 0.02 * escala, {
     isStatic: true,
     label: 'paleta'
   });
@@ -505,7 +505,7 @@ function manejarColisiones(event) {
           Matter.Body.setVelocity(pelotaCuerpo, { x: 0, y: 0 });
           Matter.Body.setPosition(pelotaCuerpo, {
             x: paletaCuerpo.position.x,
-            y: paletaCuerpo.position.y - paleta.alto / 2 - width * 0.01 * escala
+            y: paletaCuerpo.position.y - paleta.alto / 2 - width * 0.015 * escala
           });
         }
       } else if (cuerpoA.label === 'bloque' || cuerpoB.label === 'bloque') {
@@ -816,4 +816,25 @@ function actualizarEscalaYOrientacion() {
     orientacion = 'landscape';
     escala = windowHeight / 600;
   }
+}
+
+export default function BreakoutGame() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const sketch = new p5(p => {
+      p.setup = setup;
+      p.draw = draw;
+      p.preload = preload;
+      p.touchStarted = touchStarted;
+      p.touchMoved = touchMoved;
+      p.windowResized = windowResized;
+    }, canvasRef.current);
+
+    return () => {
+      sketch.remove();
+    };
+  }, []);
+
+  return <div ref={canvasRef}></div>;
 }

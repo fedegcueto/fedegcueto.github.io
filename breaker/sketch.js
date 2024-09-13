@@ -23,6 +23,8 @@ let texturaPelota, texturaPaleta;
 let texturaBloques = {};
 let texturasPowerUps = {};
 
+let startButton;
+
 let lore = [
   "En el año 3045, la humanidad se enfrenta a una crisis energética sin precedentes.",
   "Los científicos descubren cristales de energía en asteroides cercanos a la Tierra.",
@@ -78,9 +80,6 @@ let niveles = [
   }
 ];
 
-let escala;
-let orientacion = 'portrait';
-
 function preload() {
   soundFormats('mp3', 'wav');
   sonidoGolpe = loadSound('golpe.wav');
@@ -116,38 +115,59 @@ function setup() {
   pixelDensity(1);
   textFont(fuentePrincipal);
   
-  actualizarEscalaYOrientacion();
+  let escala = windowWidth / 800;
   
   motor = Matter.Engine.create();
   mundo = motor.world;
   
   mundo.gravity.y = 0;
   
-  crearPelota();
-  crearPaleta();
-  crearBloques();
+  crearPelota(escala);
+  crearPaleta(escala);
+  crearBloques(escala);
   crearParedes();
   
   Matter.Events.on(motor, 'collisionStart', manejarColisiones);
 
-  for (let i = 0; i < 100; i++) {
+  let numEstrellas = Math.floor((windowWidth * windowHeight) / 4000);
+  for (let i = 0; i < numEstrellas; i++) {
     estrellas.push({
       x: random(-width, width),
       y: random(-height, height),
       z: random(-200, -100)
     });
   }
+
+  if (windowWidth < windowHeight) {
+    alert("Por favor, gira tu dispositivo para una mejor experiencia de juego.");
+  }
+
+  let buttonSize = width * 0.15;
+  startButton = createButton('Iniciar');
+  startButton.position(width/2 - buttonSize/2, height/2);
+  startButton.size(buttonSize, buttonSize/2);
+  startButton.mousePressed(() => {
+    if (estadoJuego === 'MENU' || estadoJuego === 'LORE') {
+      estadoJuego = 'JUGAR';
+      reiniciarJuego();
+    }
+  });
 }
 
 function draw() {
   background(0);
   
+  let maxParticulas = width < 600 ? 50 : 200;
+  while (particulas.length > maxParticulas) {
+    particulas.shift();
+  }
+  
   push();
   stroke(255);
-  strokeWeight(2 * escala);
+  strokeWeight(2);
   for (let estrella of estrellas) {
     point(estrella.x, estrella.y, estrella.z);
-    estrella.y += 0.1 * escala;
+    estrella.y += 0.1;
     if (estrella.y > height) {
       estrella.y = -height;
     }
@@ -173,11 +193,10 @@ function mostrarMenu() {
   translate(-width/2, -height/2, 0);
   textAlign(CENTER);
   fill(255);
-  textSize(width * 0.05 * escala);
+  textSize(width * 0.08);
   text('BREAKER-X: Misión Energía', width/2, height/3);
-  textSize(width * 0.02 * escala);
+  textSize(width * 0.04);
   text('Toca para comenzar', width/2, height/2);
-  text('Desliza hacia arriba para ver el Lore', width/2, height/2 + 30 * escala);
   pop();
 }
 
@@ -186,12 +205,12 @@ function mostrarLore() {
   translate(-width/2, -height/2, 0);
   textAlign(CENTER);
   fill(255);
-  textSize(width * 0.02 * escala);
+  textSize(width * 0.03);
   for (let i = 0; i < lore.length; i++) {
-    text(lore[i], width/2, height/4 + i * (height * 0.08));
+    text(lore[i], width/2, height/4 + i * (height * 0.1));
   }
-  textSize(width * 0.015 * escala);
-  text('Toca para comenzar', width/2, height - 50 * escala);
+  textSize(width * 0.04);
+  text('Toca para comenzar', width/2, height - 50);
   pop();
 }
 
@@ -225,11 +244,11 @@ function mostrarJuego() {
   push();
   translate(-width/2, -height/2, 0);
   fill(255);
-  textSize(width * 0.02 * escala);
+  textSize(width * 0.04);
   textAlign(LEFT);
-  text('Puntuación: ' + puntuacion, 10 * escala, 20 * escala);
-  text('Vidas: ' + vidas, 10 * escala, 40 * escala);
-  text('Nivel: ' + nivel, 10 * escala, 60 * escala);
+  text('Puntuación: ' + puntuacion, 10, 30);
+  text('Vidas: ' + vidas, 10, 70);
+  text('Nivel: ' + nivel, 10, 110);
   pop();
 }
 
@@ -238,12 +257,12 @@ function mostrarPantallaFin() {
   translate(-width/2, -height/2, 0);
   textAlign(CENTER);
   fill(255, 0, 0);
-  textSize(width * 0.05 * escala);
+  textSize(width * 0.08);
   text('Fin del Juego', width/2, height/3);
   fill(255);
-  textSize(width * 0.02 * escala);
+  textSize(width * 0.04);
   text('Puntuación Final: ' + puntuacion, width/2, height/2);
-  text('Toca para volver al menú', width/2, height/2 + 30 * escala);
+  text('Toca para volver al menú', width/2, height/2 + 60);
   pop();
 }
 
@@ -252,22 +271,23 @@ function mostrarPantallaGanar() {
   translate(-width/2, -height/2, 0);
   textAlign(CENTER);
   fill(0, 255, 0);
-  textSize(width * 0.05 * escala);
+  textSize(width * 0.08);
   text('¡Has Salvado a la Humanidad!', width/2, height/3);
   fill(255);
-  textSize(width * 0.02 * escala);
+  textSize(width * 0.04);
   text('Puntuación Final: ' + puntuacion, width/2, height/2);
-  text('Toca para volver al menú', width/2, height/2 + 30 * escala);
+  text('Toca para volver al menú', width/2, height/2 + 60);
   pop();
 }
 
 function actualizarJuego() {
   Matter.Engine.update(motor);
   
-  let paletaX = constrain(touches.length > 0 ? touches[0].x : mouseX, paleta.ancho/2, width - paleta.ancho/2);
+  let touchX = touches.length > 0 ? touches[0].x : mouseX;
+  let paletaX = map(touchX, 0, width, 50, width - 50);
   Matter.Body.setPosition(paleta.cuerpo, { 
     x: paletaX, 
-    y: height - height * 0.15 // Subimos la paleta
+    y: height - height * 0.05 
   });
   
   for (let i = pelotas.length - 1; i >= 0; i--) {
@@ -284,7 +304,7 @@ function actualizarJuego() {
       estadoJuego = 'FIN';
       sonidoPerder.play();
     } else {
-      crearPelota();
+      crearPelota(windowWidth / 800);
     }
   }
   
@@ -304,8 +324,8 @@ function actualizarJuego() {
   if (bloques.length === 0) {
     if (nivel < nivelesMaximos) {
       nivel++;
-      crearBloques();
-      crearPelota();
+      crearBloques(windowWidth / 800);
+      crearPelota(windowWidth / 800);
     } else {
       estadoJuego = 'GANAR';
       sonidoGanar.play();
@@ -314,7 +334,7 @@ function actualizarJuego() {
   
   for (let pelota of pelotas) {
     let velocidad = Matter.Vector.magnitude(pelota.cuerpo.velocity);
-    let velocidadDeseada = niveles[nivel - 1].velocidadBase * (width / 800) * escala;
+    let velocidadDeseada = niveles[nivel - 1].velocidadBase * (width / 800);
     if (velocidad !== 0) {
       let factor = velocidadDeseada / velocidad;
       Matter.Body.setVelocity(pelota.cuerpo, {
@@ -351,7 +371,8 @@ class Pelota {
       push();
       translate(this.estela[i].x - width/2, this.estela[i].y - height/2, 0);
       fill(255, 255, 255, 255 * (1 - i / this.estela.length));
-      sphere(width * 0.015 * escala * (1 - i / this.estela.length)); // Aumentamos el tamaño de la estela
+      sphere(width * 0.01 * (1 - i / this.estela.length));
+      pop();
     }
 
     push();
@@ -361,7 +382,7 @@ class Pelota {
       tint(255, 128);
     }
     texture(texturaPelota);
-    sphere(width * 0.015 * escala); // Aumentamos el tamaño de la pelota
+    sphere(width * 0.01);
     pop();
   }
 }
@@ -370,7 +391,6 @@ class Paleta {
   constructor(cuerpo, ancho) {
     this.cuerpo = cuerpo;
     this.ancho = ancho;
-    this.alto = height * 0.02 * escala;
     this.escalaY = 1;
     this.esPegajosa = false;
   }
@@ -389,7 +409,7 @@ class Paleta {
     if (this.esPegajosa) {
       tint(255, 255, 0);
     }
-    box(this.ancho, this.alto, width * 0.02 * escala);
+    box(this.ancho, height * 0.02, width * 0.02);
     pop();
   }
 
@@ -411,13 +431,205 @@ class Bloque {
     push();
     translate(this.cuerpo.position.x - width/2, this.cuerpo.position.y - height/2, 0);
     texture(texturaBloques[this.resistencia]);
-    box(this.ancho, this.alto, width * 0.02 * escala);
+    box(this.ancho, this.alto, width * 0.02);
     pop();
   }
 }
 
-function crearPelota() {
-  let pelotaCuerpo = Matter.Bodies.circle(width / 2, height - height * 0.2, width * 0.015 * escala, {
+class PowerUp {
+  constructor(x, y, tipo) {
+    this.x = x;
+    this.y = y;
+    this.tipo = tipo;
+    this.radio = 15;
+    this.velocidad = 2;
+    this.duracion = 10 * 60; // 10 segundos a 60 FPS
+  }
+  
+  actualizar() {
+    this.y += this.velocidad;
+    
+    if (this.colisionConPaleta()) {
+      this.aplicarEfecto();
+      return true;
+    }
+    
+    return this.y > height;
+  }
+  
+  mostrar() {
+    push();
+    translate(this.x - width/2, this.y - height/2, 0);
+    rotateY(frameCount * 0.1);
+    texture(texturasPowerUps[this.tipo]);
+    box(this.radio * 2);
+    pop();
+  }
+  
+  colisionConPaleta() {
+    return (
+      this.x > paleta.cuerpo.position.x - paleta.ancho/2 &&
+      this.x < paleta.cuerpo.position.x + paleta.ancho/2 &&
+      this.y + this.radio > paleta.cuerpo.position.y - 10 &&
+      this.y - this.radio < paleta.cuerpo.position.y + 10
+    );
+  }
+  
+  aplicarEfecto() {
+    switch (this.tipo) {
+      case 'agrandarPaleta':
+        let nuevoAncho = paleta.ancho * 1.5;
+        Matter.Body.scale(paleta.cuerpo, 1.5, 1);
+        paleta.ancho = nuevoAncho;
+        setTimeout(() => {
+          Matter.Body.scale(paleta.cuerpo, 1/1.5, 1);
+          paleta.ancho = paleta.ancho / 1.5;
+        }, this.duracion);
+        break;
+      case 'pelotaRapida':
+        for (let pelota of pelotas) {
+          Matter.Body.setVelocity(pelota.cuerpo, {
+            x: pelota.cuerpo.velocity.x * 1.5,
+            y: pelota.cuerpo.velocity.y * 1.5
+          });
+        }
+        setTimeout(() => {
+          for (let pelota of pelotas) {
+            Matter.Body.setVelocity(pelota.cuerpo, {
+              x: pelota.cuerpo.velocity.x / 1.5,
+              y: pelota.cuerpo.velocity.y / 1.5
+            });
+          }
+        }, this.duracion);
+        break;
+      case 'vidaExtra':
+        vidas++;
+        break;
+      case 'multiPelota':
+        for (let i = 0; i < 2; i++) {
+          crearPelota(windowWidth / 800);
+        }
+        break;
+      case 'laser':
+        laserActivo = true;
+        setTimeout(() => {
+          laserActivo = false;
+        }, this.duracion);
+        break;
+      case 'tiempoLento':
+        let factorTiempo = 0.5;
+        for (let pelota of pelotas) {
+          pelota.velocidadOriginal = pelota.cuerpo.velocity;
+          Matter.Body.setVelocity(pelota.cuerpo, {
+            x: pelota.cuerpo.velocity.x * factorTiempo,
+            y: pelota.cuerpo.velocity.y * factorTiempo
+          });
+        }
+        setTimeout(() => {
+          for (let pelota of pelotas) {
+            Matter.Body.setVelocity(pelota.cuerpo, pelota.velocidadOriginal);
+          }
+        }, this.duracion);
+        break;
+      case 'magnetico':
+        paleta.magnetico = true;
+        setTimeout(() => {
+          paleta.magnetico = false;
+        }, this.duracion);
+        break;
+      case 'pelotaFantasma':
+        for (let pelota of pelotas) {
+          pelota.esFantasma = true;
+        }
+        setTimeout(() => {
+          for (let pelota of pelotas) {
+            pelota.esFantasma = false;
+          }
+        }, this.duracion);
+        break;
+      case 'paletaPegajosa':
+        paleta.esPegajosa = true;
+        setTimeout(() => {
+          paleta.esPegajosa = false;
+        }, this.duracion);
+        break;
+      case 'explosionEnCadena':
+        explosionEnCadenaActiva = true;
+        setTimeout(() => {
+          explosionEnCadenaActiva = false;
+        }, this.duracion);
+        break;
+    }
+  }
+}
+
+class Laser {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.velocidad = -10;
+    this.ancho = 5;
+    this.alto = 20;
+  }
+  
+  actualizar() {
+    this.y += this.velocidad;
+    this.checkColision();
+  }
+  
+  mostrar() {
+    push();
+    translate(this.x - width/2, this.y - height/2, 0);
+    fill(255, 0, 0);
+    noStroke();
+    cylinder(this.ancho / 2, this.alto);
+    pop();
+  }
+  
+  estaFueraDePantalla() {
+    return this.y < 0;
+  }
+  
+  checkColision() {
+    for (let i = bloques.length - 1; i >= 0; i--) {
+      let bloque = bloques[i];
+      if (this.x > bloque.cuerpo.position.x - bloque.ancho/2 &&
+          this.x < bloque.cuerpo.position.x + bloque.ancho/2 &&
+          this.y > bloque.cuerpo.position.y - bloque.alto/2 &&
+          this.y < bloque.cuerpo.position.y + bloque.alto/2) {
+        destruirBloque(bloque);
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+class Particula {
+  constructor(x, y) {
+    this.pos = createVector(x, y);
+    this.vel = p5.Vector.random3D().mult(random(1, 3));
+    this.color = color(random(200, 255), random(100, 200), 0);
+    this.vida = 255;
+  }
+
+  actualizar() {
+    this.pos.add(this.vel);
+    this.vida -= 5;
+  }
+
+  mostrar() {
+    push();
+    translate(this.pos.x - width/2, this.pos.y - height/2, this.pos.z);
+    noStroke();
+    fill(this.color.levels[0], this.color.levels[1], this.color.levels[2], this.vida);
+    sphere(3);
+    pop();
+  }
+}
+
+function crearPelota(escala) {
+  let pelotaCuerpo = Matter.Bodies.circle(width / 2, height - height * 0.1, width * 0.01, {
     restitution: 1,
     friction: 0,
     frictionAir: 0,
@@ -429,9 +641,9 @@ function crearPelota() {
   pelotas.push(new Pelota(pelotaCuerpo));
 }
 
-function crearPaleta() {
-  let anchoInicial = width * 0.2; // Aumentamos el ancho de la paleta
-  let paletaCuerpo = Matter.Bodies.rectangle(width / 2, height - height * 0.15, anchoInicial, height * 0.02 * escala, {
+function crearPaleta(escala) {
+  let anchoInicial = width * 0.15;
+  let paletaCuerpo = Matter.Bodies.rectangle(width / 2, height - height * 0.05, anchoInicial, height * 0.02, {
     isStatic: true,
     label: 'paleta'
   });
@@ -439,11 +651,11 @@ function crearPaleta() {
   paleta = new Paleta(paletaCuerpo, anchoInicial);
 }
 
-function crearBloques() {
+function crearBloques(escala) {
   bloques = [];
   let nivelActual = niveles[nivel - 1];
   let bloqueAncho = width / nivelActual.disposicion[0].length;
-  let bloqueAlto = height * 0.04 * escala;
+  let bloqueAlto = height * 0.04;
 
   for (let i = 0; i < nivelActual.disposicion.length; i++) {
     for (let j = 0; j < nivelActual.disposicion[i].length; j++) {
@@ -505,7 +717,7 @@ function manejarColisiones(event) {
           Matter.Body.setVelocity(pelotaCuerpo, { x: 0, y: 0 });
           Matter.Body.setPosition(pelotaCuerpo, {
             x: paletaCuerpo.position.x,
-            y: paletaCuerpo.position.y - paleta.alto / 2 - width * 0.015 * escala
+            y: paletaCuerpo.position.y - paleta.alto / 2 - width * 0.01
           });
         }
       } else if (cuerpoA.label === 'bloque' || cuerpoB.label === 'bloque') {
@@ -548,214 +760,24 @@ function crearPowerUp(x, y) {
   sonidoPowerUp.play();
 }
 
-class PowerUp {
-  constructor(x, y, tipo) {
-    this.x = x;
-    this.y = y;
-    this.tipo = tipo;
-    this.radio = 15 * escala;
-    this.velocidad = 2 * escala;
-    this.duracion = 10 * 60; // 10 segundos a 60 FPS
-  }
-  
-  actualizar() {
-    this.y += this.velocidad;
-    
-    if (this.colisionConPaleta()) {
-      this.aplicarEfecto();
-      return true;
-    }
-    
-    return this.y > height;
-  }
-  
-  mostrar() {
-    push();
-    translate(this.x - width/2, this.y - height/2, 0);
-    rotateY(frameCount * 0.1);
-    texture(texturasPowerUps[this.tipo]);
-    box(this.radio * 2);
-    pop();
-  }
-  
-  colisionConPaleta() {
-    return (
-      this.x > paleta.cuerpo.position.x - paleta.ancho/2 &&
-      this.x < paleta.cuerpo.position.x + paleta.ancho/2 &&
-      this.y + this.radio > paleta.cuerpo.position.y - 10 * escala &&
-      this.y - this.radio < paleta.cuerpo.position.y + 10 * escala
-    );
-  }
-  
-  aplicarEfecto() {
-    switch (this.tipo) {
-      case 'agrandarPaleta':
-        let nuevoAncho = paleta.ancho * 1.5;
-        Matter.Body.scale(paleta.cuerpo, 1.5, 1);
-        paleta.ancho = nuevoAncho;
-        setTimeout(() => {
-          Matter.Body.scale(paleta.cuerpo, 1/1.5, 1);
-          paleta.ancho = paleta.ancho / 1.5;
-        }, this.duracion);
-        break;
-      case 'pelotaRapida':
-        for (let pelota of pelotas) {
-          Matter.Body.setVelocity(pelota.cuerpo, {
-            x: pelota.cuerpo.velocity.x * 1.5,
-            y: pelota.cuerpo.velocity.y * 1.5
-          });
-        }
-        setTimeout(() => {
-          for (let pelota of pelotas) {
-            Matter.Body.setVelocity(pelota.cuerpo, {
-              x: pelota.cuerpo.velocity.x / 1.5,
-              y: pelota.cuerpo.velocity.y / 1.5
-            });
-          }
-        }, this.duracion);
-        break;
-      case 'vidaExtra':
-        vidas++;
-        break;
-      case 'multiPelota':
-        for (let i = 0; i < 2; i++) {
-          crearPelota();
-        }
-        break;
-      case 'laser':
-        laserActivo = true;
-        setTimeout(() => {
-          laserActivo = false;
-        }, this.duracion);
-        break;
-      case 'tiempoLento':
-        let factorTiempo = 0.5;
-        for (let pelota of pelotas) {
-          pelota.velocidadOriginal = pelota.cuerpo.velocity;
-          Matter.Body.setVelocity(pelota.cuerpo, {
-            x: pelota.cuerpo.velocity.x * factorTiempo,
-            y: pelota.cuerpo.velocity.y * factorTiempo
-          });
-        }
-        setTimeout(() => {
-          for (let pelota of pelotas) {
-            Matter.Body.setVelocity(pelota.cuerpo, pelota.velocidadOriginal);
-          }
-        }, this.duracion);
-        break;
-      case 'magnetico':
-        paleta.magnetico = true;
-        setTimeout(() => {
-          paleta.magnetico = false;
-        }, this.duracion);
-        break;
-      case 'pelotaFantasma':
-        for (let pelota of pelotas) {
-          pelota.esFantasma = true;
-        }
-        setTimeout(() => {
-          for (let pelota of pelotas) {
-            pelota.esFantasma = false;
-          }
-        }, this.duracion);
-        break;
-      case 'paletaPegajosa':
-        paleta.esPegajosa = true;
-        setTimeout(() => {
-          paleta.esPegajosa = false;
-        }, this.duracion);
-        break;
-      case 'explosionEnCadena':
-        explosionEnCadenaActiva = true;
-        setTimeout(() => {
-          explosionEnCadenaActiva = false;
-        }, this.duracion);
-        break;
-    }
-  }
-}
-
 function dispararLaser() {
-  lasers.push(new Laser(paleta.cuerpo.position.x, paleta.cuerpo.position.y - 20 * escala));
+  lasers.push(new Laser(paleta.cuerpo.position.x, paleta.cuerpo.position.y - 20));
   sonidoLaser.play();
 }
 
-class Laser {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.velocidad = -10 * escala;
-    this.ancho = 5 * escala;
-    this.alto = 20 * escala;
-  }
-  
-  actualizar() {
-    this.y += this.velocidad;
-    this.checkColision();
-  }
-  
-  mostrar() {
-    push();
-    translate(this.x - width/2, this.y - height/2, 0);
-    fill(255, 0, 0);
-    noStroke();
-    cylinder(this.ancho / 2, this.alto);
-    pop();
-  }
-  
-  estaFueraDePantalla() {
-    return this.y < 0;
-  }
-  
-  checkColision() {
-    for (let i = bloques.length - 1; i >= 0; i--) {
-      let bloque = bloques[i];
-      if (this.x > bloque.cuerpo.position.x - bloque.ancho/2 &&
-          this.x < bloque.cuerpo.position.x + bloque.ancho/2 &&
-          this.y > bloque.cuerpo.position.y - bloque.alto/2 &&
-          this.y < bloque.cuerpo.position.y + bloque.alto/2) {
-        destruirBloque(bloque);
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
 function crearExplosion(x, y) {
-  for (let i = 0; i < 20; i++) {
+  let numParticulas = width < 600 ? 10 : 20;
+  for (let i = 0; i < numParticulas; i++) {
     particulas.push(new Particula(x, y));
   }
 }
 
-class Particula {
-  constructor(x, y) {
-    this.pos = createVector(x, y);
-    this.vel = p5.Vector.random3D().mult(random(1, 3) * escala);
-    this.color = color(random(200, 255), random(100, 200), 0);
-    this.vida = 255;
-  }
-
-  actualizar() {
-    this.pos.add(this.vel);
-    this.vida -= 5;
-  }
-
-  mostrar() {
-    push();
-    translate(this.pos.x - width/2, this.pos.y - height/2, this.pos.z);
-    noStroke();
-    fill(this.color.levels[0], this.color.levels[1], this.color.levels[2], this.vida);
-    sphere(3 * escala);
-    pop();
-  }
-}
-
 function touchStarted() {
-  if (estadoJuego === 'MENU') {
-    estadoJuego = 'JUGAR';
-    reiniciarJuego();
-  } else if (estadoJuego === 'LORE') {
+  if (estadoJuego === 'JUGAR') {
+    if (laserActivo) {
+      dispararLaser();
+    }
+  } else if (estadoJuego === 'MENU' || estadoJuego === 'LORE') {
     estadoJuego = 'JUGAR';
     reiniciarJuego();
   } else if (estadoJuego === 'FIN' || estadoJuego === 'GANAR') {
@@ -765,7 +787,31 @@ function touchStarted() {
 }
 
 function touchMoved() {
+  if (estadoJuego === 'JUGAR') {
+    let touchX = touches[0].x;
+    let paletaX = map(touchX, 0, width, 50, width - 50);
+    Matter.Body.setPosition(paleta.cuerpo, { 
+      x: paletaX, 
+      y: height - height * 0.05 
+    });
+  }
   return false;
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  let escala = windowWidth / 800;
+  if (paleta) {
+    Matter.Body.setPosition(paleta.cuerpo, { 
+      x: width / 2, 
+      y: height - height * 0.05 
+    });
+  }
+  if (startButton) {
+    let buttonSize = width * 0.15;
+    startButton.position(width/2 - buttonSize/2, height/2);
+    startButton.size(buttonSize, buttonSize/2);
+  }
 }
 
 function reiniciarJuego() {
@@ -774,9 +820,9 @@ function reiniciarJuego() {
   nivel = 1;
   Matter.World.clear(mundo);
   pelotas = [];
-  crearPelota();
-  crearPaleta();
-  crearBloques();
+  crearPelota(windowWidth / 800);
+  crearPaleta(windowWidth / 800);
+  crearBloques(windowWidth / 800);
   crearParedes();
   powerUps = [];
   lasers = [];
@@ -800,20 +846,4 @@ function estaCerca(bloque1, bloque2) {
   let distancia = dist(bloque1.cuerpo.position.x, bloque1.cuerpo.position.y,
                        bloque2.cuerpo.position.x, bloque2.cuerpo.position.y);
   return distancia < bloque1.ancho * 1.5;
-}
-
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  actualizarEscalaYOrientacion();
-  reiniciarJuego();
-}
-
-function actualizarEscalaYOrientacion() {
-  if (windowWidth < windowHeight) {
-    orientacion = 'portrait';
-    escala = windowWidth / 400;
-  } else {
-    orientacion = 'landscape';
-    escala = windowHeight / 400;
-  }
 }

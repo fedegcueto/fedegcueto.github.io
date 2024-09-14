@@ -19,11 +19,11 @@ let fuentePrincipal;
 
 let estrellas = [];
 
-let texturaPelota, texturaPaleta;
+let texturaPelota, texturaPaleta, texturaBotonInicio;
 let texturaBloques = {};
 let texturasPowerUps = {};
 
-let startButton;
+let botonInicio;
 
 let lore = [
   "En el año 3045, la humanidad se enfrenta a una crisis energética sin precedentes.",
@@ -91,8 +91,9 @@ function preload() {
   
   fuentePrincipal = loadFont('https://cdnjs.cloudflare.com/ajax/libs/topcoat/0.8.0/font/SourceSansPro-Regular.otf');
 
-  texturaPelota = loadImage('pelota.png');
+  texturaPelota = loadImage('pelota_clara.png');
   texturaPaleta = loadImage('paleta.png');
+  texturaBotonInicio = loadImage('boton_inicio.png');
 
   texturaBloques[1] = loadImage('bloque1.png');
   texturaBloques[2] = loadImage('bloque2.png');
@@ -142,16 +143,13 @@ function setup() {
     alert("Por favor, gira tu dispositivo para una mejor experiencia de juego.");
   }
 
-  let buttonSize = width * 0.15;
-  startButton = createButton('Iniciar');
-  startButton.position(width/2 - buttonSize/2, height/2);
-  startButton.size(buttonSize, buttonSize/2);
-  startButton.mousePressed(() => {
-    if (estadoJuego === 'MENU' || estadoJuego === 'LORE') {
-      estadoJuego = 'JUGAR';
-      reiniciarJuego();
-    }
-  });
+  botonInicio = {
+    x: 0,
+    y: 0,
+    ancho: width * 0.3,
+    alto: height * 0.15,
+    visible: true
+  };
 }
 
 function draw() {
@@ -195,8 +193,11 @@ function mostrarMenu() {
   fill(255);
   textSize(width * 0.08);
   text('BREAKER-X: Misión Energía', width/2, height/3);
-  textSize(width * 0.04);
-  text('Toca para comenzar', width/2, height/2);
+  
+  if (botonInicio.visible) {
+    image(texturaBotonInicio, width/2 - botonInicio.ancho/2, height/2 - botonInicio.alto/2, botonInicio.ancho, botonInicio.alto);
+  }
+  
   pop();
 }
 
@@ -263,6 +264,11 @@ function mostrarPantallaFin() {
   textSize(width * 0.04);
   text('Puntuación Final: ' + puntuacion, width/2, height/2);
   text('Toca para volver al menú', width/2, height/2 + 60);
+  
+  if (botonInicio.visible) {
+    image(texturaBotonInicio, width/2 - botonInicio.ancho/2, height/2 + 100, botonInicio.ancho, botonInicio.alto);
+  }
+  
   pop();
 }
 
@@ -277,6 +283,11 @@ function mostrarPantallaGanar() {
   textSize(width * 0.04);
   text('Puntuación Final: ' + puntuacion, width/2, height/2);
   text('Toca para volver al menú', width/2, height/2 + 60);
+  
+  if (botonInicio.visible) {
+    image(texturaBotonInicio, width/2 - botonInicio.ancho/2, height/2 + 100, botonInicio.ancho, botonInicio.alto);
+  }
+  
   pop();
 }
 
@@ -303,6 +314,7 @@ function actualizarJuego() {
     if (vidas <= 0) {
       estadoJuego = 'FIN';
       sonidoPerder.play();
+      botonInicio.visible = true;
     } else {
       crearPelota(windowWidth / 800);
     }
@@ -329,6 +341,7 @@ function actualizarJuego() {
     } else {
       estadoJuego = 'GANAR';
       sonidoGanar.play();
+      botonInicio.visible = true;
     }
   }
   
@@ -379,10 +392,12 @@ class Pelota {
     translate(this.cuerpo.position.x - width/2, this.cuerpo.position.y - height/2, 0);
     rotateY(this.rotacion);
     if (this.esFantasma) {
-      tint(255, 128);
+      tint(255, 200);
+    } else {
+      tint(255, 255);
     }
     texture(texturaPelota);
-    sphere(width * 0.01);
+    sphere(width * 0.015);
     pop();
   }
 }
@@ -629,7 +644,7 @@ class Particula {
 }
 
 function crearPelota(escala) {
-  let pelotaCuerpo = Matter.Bodies.circle(width / 2, height - height * 0.1, width * 0.01, {
+  let pelotaCuerpo = Matter.Bodies.circle(width / 2, height - height * 0.1, width * 0.015, {
     restitution: 1,
     friction: 0,
     frictionAir: 0,
@@ -717,7 +732,7 @@ function manejarColisiones(event) {
           Matter.Body.setVelocity(pelotaCuerpo, { x: 0, y: 0 });
           Matter.Body.setPosition(pelotaCuerpo, {
             x: paletaCuerpo.position.x,
-            y: paletaCuerpo.position.y - paleta.alto / 2 - width * 0.01
+            y: paletaCuerpo.position.y - paleta.alto / 2 - width * 0.015
           });
         }
       } else if (cuerpoA.label === 'bloque' || cuerpoB.label === 'bloque') {
@@ -778,10 +793,24 @@ function touchStarted() {
       dispararLaser();
     }
   } else if (estadoJuego === 'MENU' || estadoJuego === 'LORE') {
-    estadoJuego = 'JUGAR';
-    reiniciarJuego();
+    if (botonInicio.visible && 
+        mouseX > width/2 - botonInicio.ancho/2 && 
+        mouseX < width/2 + botonInicio.ancho/2 && 
+        mouseY > height/2 - botonInicio.alto/2 && 
+        mouseY < height/2 + botonInicio.alto/2) {
+      estadoJuego = 'JUGAR';
+      reiniciarJuego();
+      botonInicio.visible = false;
+    }
   } else if (estadoJuego === 'FIN' || estadoJuego === 'GANAR') {
-    estadoJuego = 'MENU';
+    if (botonInicio.visible && 
+        mouseX > width/2 - botonInicio.ancho/2 && 
+        mouseX < width/2 + botonInicio.ancho/2 && 
+        mouseY > height/2 + 100 && 
+        mouseY < height/2 + 100 + botonInicio.alto) {
+      estadoJuego = 'MENU';
+      botonInicio.visible = true;
+    }
   }
   return false;
 }
@@ -807,11 +836,8 @@ function windowResized() {
       y: height - height * 0.05 
     });
   }
-  if (startButton) {
-    let buttonSize = width * 0.15;
-    startButton.position(width/2 - buttonSize/2, height/2);
-    startButton.size(buttonSize, buttonSize/2);
-  }
+  botonInicio.ancho = width * 0.3;
+  botonInicio.alto = height * 0.15;
 }
 
 function reiniciarJuego() {

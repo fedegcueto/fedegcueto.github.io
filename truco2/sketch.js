@@ -702,7 +702,7 @@ class TrucoGame {
         this.trucoState = "truco";
         this.currentBet = 2;
       }
-      this.logEvent(`Computadora aceptó el ${this.trucoState}`);
+      this.logEvent(`Computadora aceptó el ${this.trucoState === "pending" ? "truco" : this.trucoState}`);
       if (this.currentPlayer === 1) {
         setTimeout(() => this.playAI(), 1000);
       }
@@ -714,7 +714,7 @@ class TrucoGame {
         points = 3;
       }
       this.score[0] += points;
-      this.logEvent(`Computadora no quiso el ${this.trucoState}. Jugador ganó ${points} punto(s)`);
+      this.logEvent(`Computadora no quiso el ${this.trucoState === "pending" ? "truco" : this.trucoState}. Jugador ganó ${points} punto(s)`);
       this.endHand();
     } else if (aiResponse === "raise") {
       if (this.trucoState === "pending" || this.trucoState === "truco") {
@@ -796,28 +796,31 @@ class TrucoGame {
     // Mostrar el resultado del envido en la primera mano
     if (this.envidoPoints[0] > 0 || this.envidoPoints[1] > 0) {
       const timeSinceEnvido = Date.now() - this.envidoDisplayTime;
-      if (timeSinceEnvido < 3000) { // Mostrar por 3 segundos
+      if (timeSinceEnvido < 3000) {
         push();
         fill(0, 0, 0, 200);
-        rect(width / 2 - 200, height / 2 - 100, 400, 100);
+        stroke(255, 255, 255, 100);
+        rect(width / 2 - 200, height / 2 - 100, 400, 120, 10);
+        noStroke();
+        
         textSize(24);
         fill(255);
         textAlign(CENTER, CENTER);
         text(
           "Resultado del Envido:",
           width / 2,
-          height / 2 - 80
+          height / 2 - 60
         );
         text(
           `${this.players[0].name}: ${this.envidoPoints[0]} - ${this.players[1].name}: ${this.envidoPoints[1]}`,
           width / 2,
-          height / 2 - 50
+          height / 2 - 20
         );
         if (this.envidoPoints[0] === this.envidoPoints[1]) {
-          text("(Gana el mano)", width / 2, height / 2 - 20);
+          text(`(Ganó ${this.currentBet} puntos por ser mano)`, width / 2, height / 2 + 10);
         } else {
           const winner = this.envidoPoints[0] > this.envidoPoints[1] ? this.players[0].name : this.players[1].name;
-          text(`Ganador: ${winner}`, width / 2, height / 2 - 20);
+          text(`Ganador: ${winner}`, width / 2, height / 2 + 10);
         }
         pop();
       }
@@ -864,20 +867,91 @@ class TrucoGame {
   }
 
   displayGameLog() {
-    fill(0, 0, 0, 150);
-    rect(width * 0.01, height * 0.1, width * 0.2, height * 0.3);
+    // Fondo semi-transparente más oscuro con bordes redondeados
+    fill(0, 0, 0, 180);
+    rect(width * 0.01, height * 0.1, width * 0.25, height * 0.35, 10);
+    
+    // Título con puntuación
     fill(255);
-    textSize(14);
+    textSize(16);
+    textStyle(BOLD);
+    textAlign(CENTER, TOP);
+    text(`Jugador ${this.score[0]} | Computadora ${this.score[1]}`, width * 0.01 + width * 0.125, height * 0.11);
+    
+    // Línea separadora con degradado
+    for (let i = 0; i < 50; i++) {
+      const alpha = map(i, 0, 49, 150, 50);
+      stroke(255, 255, 255, alpha);
+      const x = map(i, 0, 49, width * 0.02, width * 0.24);
+      line(x, height * 0.13, x + width * 0.005, height * 0.13);
+    }
+    noStroke();
+    
+    // Mensajes del juego con mejor espaciado y degradado
+    textStyle(NORMAL);
     textAlign(LEFT, TOP);
-    let y = height * 0.11;
-    for (let i = this.gameLog.length - 1; i >= Math.max(0, this.gameLog.length - 10); i--) {
-      text(this.gameLog[i], width * 0.02, y);
-      y += height * 0.03;
+    textSize(14);
+    let y = height * 0.15;
+    
+    // Mostrar más mensajes si son más cortos por los saltos de línea
+    for (let i = this.gameLog.length - 1; i >= Math.max(0, this.gameLog.length - 15); i--) {
+      const alpha = map(this.gameLog.length - 1 - i, 0, 14, 255, 150);
+      fill(255, 255, 255, alpha);
+      
+      // Dividir mensajes largos en múltiples líneas si es necesario
+      const maxWidth = width * 0.23;
+      let message = this.gameLog[i];
+      let words = message.split(" ");
+      let line = "";
+      
+      for (let j = 0; j < words.length; j++) {
+        const testLine = line + words[j] + " ";
+        const testWidth = textWidth(testLine);
+        
+        if (testWidth > maxWidth && j > 0) {
+          text(line, width * 0.02, y);
+          line = words[j] + " ";
+          y += height * 0.02;
+        } else {
+          line = testLine;
+        }
+      }
+      text(line, width * 0.02, y);
+      y += height * 0.025;
     }
   }
 
   logEvent(event) {
-    this.gameLog.push(event);
+    // Reemplazar "pending" por "truco" en los mensajes
+    if (event.includes("pending")) {
+      event = event.replace("pending", "truco");
+    }
+
+    // Agregar saltos de línea para mensajes largos
+    if (event.includes("quiso el") && event.includes("ganó")) {
+      const parts = event.split(".");
+      this.gameLog.push(parts[0].trim());
+      if (parts[1]) {
+        this.gameLog.push(parts[1].trim());
+      }
+    } else if (event.includes("quiso") && event.includes("ganó")) {
+      const parts = event.split(".");
+      if (parts.length > 1) {
+        this.gameLog.push(parts[0].trim());
+        this.gameLog.push(parts[1].trim());
+      } else {
+        const quiereIndex = event.indexOf("quiso");
+        const ganoIndex = event.indexOf("ganó");
+        if (quiereIndex !== -1 && ganoIndex !== -1) {
+          this.gameLog.push(event.substring(0, ganoIndex).trim());
+          this.gameLog.push(event.substring(ganoIndex).trim());
+        } else {
+          this.gameLog.push(event);
+        }
+      }
+    } else {
+      this.gameLog.push(event);
+    }
   }
 
   handleAIFlor() {
@@ -1212,9 +1286,10 @@ class TrucoGame {
     const aiEnvidoPoints = this.players[1].calculateEnvido();
     const aiResponse = this.decideEnvidoResponse(aiEnvidoPoints, this.currentBet, this.envidoState);
     if (aiResponse === "accept") {
-      this.envidoState = "accepted";
+      this.envidoState = "played";
       const playerEnvidoPoints = this.players[0].calculateEnvido();
       this.envidoPoints = [playerEnvidoPoints, aiEnvidoPoints];
+      this.envidoDisplayTime = Date.now();
       let winner;
       if (playerEnvidoPoints === aiEnvidoPoints) {
         winner = this.mano;
@@ -1282,47 +1357,47 @@ class TrucoGame {
           }
         }
       }
+    }
 
-      if (this.showPlayerResponseButtons) {
-        for (let i = 0; i < this.buttons.length; i++) {
-          if (this.buttons[i].isClicked()) {
-            if (this.florInProgress) {
-              this.handlePlayerFlorResponse(this.buttons[i].label);
-            } else if (this.envidoInProgress) {
-              this.handlePlayerEnvidoResponse(this.buttons[i].label);
-            } else {
-              this.handlePlayerTrucoResponse(this.buttons[i].label);
-            }
-            return;
+    if (this.showPlayerResponseButtons) {
+      for (let i = 0; i < this.buttons.length; i++) {
+        if (this.buttons[i].isClicked()) {
+          if (this.florInProgress) {
+            this.handlePlayerFlorResponse(this.buttons[i].label);
+          } else if (this.envidoInProgress) {
+            this.handlePlayerEnvidoResponse(this.buttons[i].label);
+          } else {
+            this.handlePlayerTrucoResponse(this.buttons[i].label);
           }
+          return;
         }
-      } else if (this.currentPlayer === 0 && !this.envidoInProgress && !this.florInProgress) {
-        for (let i = 0; i < this.buttons.length; i++) {
-          if (this.buttons[i].isClicked()) {
-            switch (this.buttons[i].label) {
-              case "Flor":
-                this.callFlor();
-                break;
-              case "Envido":
-                this.callEnvido();
-                break;
-              case "Truco":
-              case "Retruco":
-              case "Vale Cuatro":
-                this.callTruco();
-                break;
-              case "Real Envido":
-                this.callRealEnvido();
-                break;
-              case "Falta Envido":
-                this.callFaltaEnvido();
-                break;
-              case "Ir al mazo":
-                this.irMazo();
-                break;
-            }
-            return;
+      }
+    } else if (this.currentPlayer === 0 && !this.envidoInProgress && !this.florInProgress) {
+      for (let i = 0; i < this.buttons.length; i++) {
+        if (this.buttons[i].isClicked()) {
+          switch (this.buttons[i].label) {
+            case "Flor":
+              this.callFlor();
+              break;
+            case "Envido":
+              this.callEnvido();
+              break;
+            case "Truco":
+            case "Retruco":
+            case "Vale Cuatro":
+              this.callTruco();
+              break;
+            case "Real Envido":
+              this.callRealEnvido();
+              break;
+            case "Falta Envido":
+              this.callFaltaEnvido();
+              break;
+            case "Ir al mazo":
+              this.irMazo();
+              break;
           }
+          return;
         }
       }
     }

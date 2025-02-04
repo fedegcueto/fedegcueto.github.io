@@ -945,7 +945,7 @@ class TrucoGame {
 
   displayPlayedCards() {
     const isLandscape = windowWidth > windowHeight;
-    const verticalSpacing = isLandscape ? 0.14 : 0.35;  // Reducido en escritorio de 0.16 a 0.14
+    const verticalSpacing = isLandscape ? 0.14 : 0.55;  // Reducido en escritorio de 0.16 a 0.14
     
     // Cartas del jugador
     if (this.players && this.players[0] && this.players[0].playedCards) {

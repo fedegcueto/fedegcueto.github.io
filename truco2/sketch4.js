@@ -357,7 +357,7 @@ class TrucoGame {
         this.messageFontSize = min(14, this.logWidth * 0.05);
     } else {
         // Móvil
-        this.cardWidth = min(baseSize * 0.2, 160);
+        this.cardWidth = min(baseSize * 0.2, 125);
         this.cardHeight = this.cardWidth * 1.5;
         
         this.cardSpacing = min(windowWidth * 0.29, baseSize * 0.29);
@@ -377,7 +377,7 @@ class TrucoGame {
         this.logX = (windowWidth - this.logWidth) / 2;
         
         this.playedCardSpacingX = baseSize * 0.19;
-        this.playedCardSpacingY = baseSize * 0.19;
+        this.playedCardSpacingY = baseSize * 0.41;
         
         this.titleFontSize = min(22, this.logWidth * 0.08);
         this.messageFontSize = min(18, this.logWidth * 0.06);
@@ -1607,7 +1607,8 @@ class TrucoGame {
     // Sumar puntos según el estado del truco
     switch (this.trucoState) {
         case "not_played":
-            break; // 0 puntos si no se cantó truco
+        points = Math.max(points, 1);
+            break; // 1 puntos si no se cantó truco
         case "truco":
         case "pending":
             points = Math.max(points, 2);
